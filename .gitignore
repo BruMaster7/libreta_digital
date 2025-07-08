@@ -1,0 +1,20 @@
+# Compilados
+/bin/
+/target/
+
+# Configuración IDE
+.classpath
+.project
+.settings/
+
+# Archivos temporales
+*.log
+*.tmp
+
+# Credenciales
+.env
+
+# Sistemas operativos
+.DS_Store
+Thumbs.db
+
