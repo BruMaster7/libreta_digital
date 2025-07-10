@@ -5,6 +5,10 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import main.dao.UsuarioDAO;
+import main.model.Usuario;
+
 import javax.swing.BoxLayout;
 import javax.swing.JScrollPane;
 import javax.swing.JButton;
@@ -26,7 +30,7 @@ public class VentanaLogin extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
-	private JTextField txtNombreUsuario;
+	private JTextField txtEmail;
 	private JPasswordField pwdContrasena;
 	public Color btnHover = new Color (156,142,240);
 
@@ -78,15 +82,15 @@ public class VentanaLogin extends JFrame {
 		lblTitulo.setBounds(265, 192, 251, 78);
 		panel.add(lblTitulo);
 		
-		txtNombreUsuario = new JTextField();
-		txtNombreUsuario.setForeground(Color.LIGHT_GRAY);
-		txtNombreUsuario.setBorder(null);
-		txtNombreUsuario.setHorizontalAlignment(SwingConstants.LEFT);
-		txtNombreUsuario.setText("Nombre de Usuario");
-		txtNombreUsuario.setFont(new Font("Roboto", Font.PLAIN, 14));
-		txtNombreUsuario.setBounds(244, 272, 300, 21);
-		panel.add(txtNombreUsuario);
-		txtNombreUsuario.setColumns(10);
+		txtEmail = new JTextField();
+		txtEmail.setForeground(Color.LIGHT_GRAY);
+		txtEmail.setBorder(null);
+		txtEmail.setHorizontalAlignment(SwingConstants.LEFT);
+		txtEmail.setText("Ingrese su Email");
+		txtEmail.setFont(new Font("Roboto", Font.PLAIN, 14));
+		txtEmail.setBounds(244, 272, 300, 21);
+		panel.add(txtEmail);
+		txtEmail.setColumns(10);
 		
 		JSeparator separator = new JSeparator();
 		separator.setForeground(new Color(79, 67, 188));
@@ -124,6 +128,21 @@ public class VentanaLogin extends JFrame {
 			@Override
 			public void mouseExited(MouseEvent e) {
 				loginTxt.setForeground(Color.WHITE);
+			}
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				String email = txtEmail.getText();
+				String contrasena = new String(pwdContrasena.getPassword());
+				Usuario userLogueado = UsuarioDAO.login(email, contrasena);
+				
+				if (userLogueado != null) {
+				    System.out.println("✅ Bienvenido " + userLogueado.getNombre());
+				    // Abrir ventana principal o continuar al sistema
+				} else {
+				    System.out.println("❌ Credenciales incorrectas.");
+				}
+				
+				
 			}
 		});
 		loginTxt.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
