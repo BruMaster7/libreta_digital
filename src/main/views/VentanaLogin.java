@@ -15,6 +15,7 @@ import javax.swing.JButton;
 import java.awt.Color;
 import java.awt.Canvas;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
 import java.awt.Font;
@@ -137,8 +138,28 @@ public class VentanaLogin extends JFrame {
 				
 				if (userLogueado != null) {
 				    System.out.println("✅ Bienvenido " + userLogueado.getNombre());
+				    JOptionPane.showMessageDialog(
+				            null,
+				            "✅ Bienvenido " + userLogueado.getNombre(),
+				            "Inicio de Sesión Exitoso",
+				            JOptionPane.INFORMATION_MESSAGE
+				        );
+				    if (userLogueado.getRolId() == 3) {
+				    	System.out.println("El usuario es un Estudiante");
+				    	UsuarioDAO.verBoletinEstudiante(userLogueado.getId());
+		                // Si es estudiante, ir a la vista del boletín
+		                VentanaEstudiante boletinView = new VentanaEstudiante(userLogueado.getNombre());
+		                boletinView.setVisible(true);
+		                dispose(); // Cierra la ventana de login
+				    }
 				    // Abrir ventana principal o continuar al sistema
 				} else {
+					 JOptionPane.showMessageDialog(
+					            null,
+					            "❌ Credenciales incorrectas.",
+					            "Error de Inicio de Sesión",
+					            JOptionPane.ERROR_MESSAGE
+					        );
 				    System.out.println("❌ Credenciales incorrectas.");
 				}
 				
