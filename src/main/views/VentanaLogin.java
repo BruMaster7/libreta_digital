@@ -84,7 +84,7 @@ public class VentanaLogin extends JFrame {
 		panel.add(lblTitulo);
 		
 		txtEmail = new JTextField();
-		txtEmail.setForeground(Color.LIGHT_GRAY);
+		txtEmail.setForeground(new Color(128, 128, 128));
 		txtEmail.setBorder(null);
 		txtEmail.setHorizontalAlignment(SwingConstants.LEFT);
 		txtEmail.setText("Ingrese su Email");
@@ -105,7 +105,7 @@ public class VentanaLogin extends JFrame {
 		
 		pwdContrasena = new JPasswordField();
 		pwdContrasena.setBorder(null);
-		pwdContrasena.setForeground(Color.LIGHT_GRAY);
+		pwdContrasena.setForeground(new Color(128, 128, 128));
 		pwdContrasena.setText("Contraseña");
 		pwdContrasena.setBounds(244, 317, 300, 21);
 		panel.add(pwdContrasena);
