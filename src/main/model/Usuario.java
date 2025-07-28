@@ -2,14 +2,16 @@ package main.model;
 
 public class Usuario {
     private int usuarioId;
+    private String documento;
     private String nombre;
     private String apellido;
     private String email;
-    private String estado;
+    private boolean estado;
     private int rol_id;
 
-    public Usuario(int usuarioId, String nombre, String apellido, String email, String estado, int rol_id) {
+    public Usuario(int usuarioId, String documento, String nombre, String apellido, String email, boolean estado, int rol_id) {
         this.usuarioId = usuarioId;
+        this.documento = documento;
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
@@ -24,6 +26,10 @@ public class Usuario {
     
     public int getId() {
     	return usuarioId;
+    }
+    
+    public String getDocumento() {
+    	return documento;
     }
     
     public int getUsuarioId() {
@@ -42,7 +48,7 @@ public class Usuario {
         return email;
     }
 
-    public String getEstado() {
+    public boolean getEstado() {
         return estado;
     }
 

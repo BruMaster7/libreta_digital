@@ -16,7 +16,7 @@ public class UsuarioDAO {
 	public static Usuario login(String email, String contrasenaPlano) {
 	    Usuario usuario = null;
 
-	    String sql = "SELECT usuario_id, nombre, apellido, email, estado, rol_id FROM usuario " +
+	    String sql = "SELECT usuario_id, documento, nombre, apellido, email, estado, rol_id FROM usuario " +
 	                 "WHERE email = ? AND contrasena_hash = ?";
 
 	    try (Connection conn = Conexion.conectar();
@@ -30,10 +30,11 @@ public class UsuarioDAO {
 	        if (rs.next()) {
 	            usuario = new Usuario(
 	                rs.getInt("usuario_id"),
+                    rs.getString("documento"),
 	                rs.getString("nombre"),
 	                rs.getString("apellido"),
 	                rs.getString("email"),
-	                rs.getString("estado"),
+	                rs.getBoolean("estado"),
                     rs.getInt("rol_id")
 	            );
 	        }
@@ -48,7 +49,7 @@ public class UsuarioDAO {
 	
 	public static List<Usuario> listarUsuarios() {
         List<Usuario> lista = new ArrayList<>();
-        String sql = "SELECT usuario_id, nombre, apellido, email, estado, rol_id FROM usuario";
+        String sql = "SELECT usuario_id, documento, nombre, apellido, email, estado, rol_id FROM usuario";
 
         try (Connection conn = Conexion.conectar();
              Statement stmt = conn.createStatement();
@@ -57,10 +58,11 @@ public class UsuarioDAO {
             while (rs.next()) {
                 Usuario u = new Usuario(
                         rs.getInt("usuario_id"),
+                        rs.getString("documento"),
                         rs.getString("nombre"),
                         rs.getString("apellido"),
                         rs.getString("email"),
-                        rs.getString("estado"),
+                        rs.getBoolean("estado"),
                         rs.getInt("rol_id")
                 );
                 lista.add(u);
