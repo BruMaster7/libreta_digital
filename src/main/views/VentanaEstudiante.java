@@ -8,12 +8,21 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JTree;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+
+import main.dao.CalificacionDAO;
+import main.model.CalificacionDetalle;
+import main.model.Usuario;
+import main.services.BoletinCurso;
+
 import java.awt.BorderLayout;
 import javax.swing.BoxLayout;
 import java.awt.CardLayout;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import java.awt.GridBagLayout;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.awt.GridBagConstraints;
 import java.awt.FlowLayout;
 import javax.swing.JScrollPane;
@@ -23,7 +32,7 @@ public class VentanaEstudiante extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTable tableBoletin;
-	private static String nombreEstudiante;
+	private static Usuario estudiante;
 
 	/**
 	 * Launch the application.
@@ -32,7 +41,7 @@ public class VentanaEstudiante extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentanaEstudiante frame = new VentanaEstudiante(nombreEstudiante);
+					VentanaEstudiante frame = new VentanaEstudiante(estudiante);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -44,7 +53,7 @@ public class VentanaEstudiante extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentanaEstudiante(String nombreEstudiante) {
+	public VentanaEstudiante(Usuario estudiante) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 762, 606);
 		contentPane = new JPanel();
@@ -63,19 +72,41 @@ public class VentanaEstudiante extends JFrame {
 		
 		tableBoletin = new JTable();
 		tableBoletin.setEnabled(false);
-		tableBoletin.setModel(new DefaultTableModel(
-			new Object[][] {
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-				{null, null, null, null, null, null},
-			},
-			new String[] {
-				"Asignatura", "Actividades", "1er Parcial", "2do Parcial", "Promedio", "Faltas"
-			}
-		));
+
 		scrollPane.setViewportView(tableBoletin);
+	    cargarBoletin(estudiante.getId());
 
 	}
+	
+	private void cargarBoletin(int estudianteId) {
+	    CalificacionDAO dao = new CalificacionDAO();
+	    List<CalificacionDetalle> calificaciones = dao.obtenerCalificacionesPorEstudiante(estudianteId);
+
+	    Map<String, BoletinCurso> boletinMap = new HashMap<>();
+
+	    for (CalificacionDetalle c : calificaciones) {
+	        String curso = c.getNombreCurso();
+	        boletinMap.putIfAbsent(curso, new BoletinCurso(curso));
+	        boletinMap.get(curso).agregarNota(c.getTipoEvaluacion(), c.getNombreEvaluacion(), c.getNota());
+	    }
+
+	    DefaultTableModel modelo = new DefaultTableModel(
+	        new String[]{"Asignatura", "Actividades", "1er Parcial", "2do Parcial", "Promedio", "Faltas"}, 0
+	    );
+
+	    for (BoletinCurso bc : boletinMap.values()) {
+	        modelo.addRow(new Object[]{
+	            bc.getAsignatura(),
+	            bc.getActividadesStr(),
+	            bc.getPrimerParcial() != null ? bc.getPrimerParcial() : "-",
+	            bc.getSegundoParcial() != null ? bc.getSegundoParcial() : "-",
+	            bc.getPromedio(),
+	            "-" // Podés reemplazar cuando tengas faltas
+	        });
+	    }
+
+	    tableBoletin.setModel(modelo);
+	}
+
+
 }
