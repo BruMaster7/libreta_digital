@@ -2,6 +2,9 @@ package main.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+
 
 public class BoletinCurso {
     private String asignatura;
@@ -32,8 +35,10 @@ public class BoletinCurso {
     }
 
     public String getActividadesStr() {
-        return String.join(", ", actividades);
+        return String.join("\n", actividades);
     }
+
+
 
     public Double getPrimerParcial() {
         return primerParcial;

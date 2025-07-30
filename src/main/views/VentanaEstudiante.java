@@ -13,6 +13,7 @@ import main.dao.CalificacionDAO;
 import main.model.CalificacionDetalle;
 import main.model.Usuario;
 import main.services.BoletinCurso;
+import main.views.personalized.TextAreaRenderer;
 
 import java.awt.BorderLayout;
 import javax.swing.BoxLayout;
@@ -75,6 +76,9 @@ public class VentanaEstudiante extends JFrame {
 
 		scrollPane.setViewportView(tableBoletin);
 	    cargarBoletin(estudiante.getId());
+	 // Establecer renderer para la columna "Actividades" (índice 1)
+	    tableBoletin.getColumnModel().getColumn(1).setCellRenderer(new TextAreaRenderer());
+
 
 	}
 	
