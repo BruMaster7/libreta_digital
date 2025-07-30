@@ -35,10 +35,10 @@ public class BoletinCurso {
     }
 
     public String getActividadesStr() {
-        return String.join("\n", actividades);
+    	return actividades.stream()
+                .sorted() // orden alfabético
+                .collect(Collectors.joining("\n"));
     }
-
-
 
     public Double getPrimerParcial() {
         return primerParcial;

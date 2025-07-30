@@ -6,6 +6,7 @@ public class Usuario {
     private String nombre;
     private String apellido;
     private String email;
+    private String contrasena;
     private boolean estado;
     private int rol_id;
 
@@ -20,7 +21,11 @@ public class Usuario {
         
     }
     
-    public int getRolId() {
+    public Usuario() {
+		
+	}
+
+	public int getRolId() {
     	return rol_id;
     }
     
@@ -51,10 +56,52 @@ public class Usuario {
     public boolean getEstado() {
         return estado;
     }
+    
+    public String getContrasena() {
+    	return contrasena;
+    }
 
     @Override
     public String toString() {
         return usuarioId + ": " + nombre + " " + apellido + " (" + email + ") - " + estado;
     }
+
+	public int getRol_id() {
+		return rol_id;
+	}
+
+	public void setRol_id(int rol_id) {
+		this.rol_id = rol_id;
+	}
+
+	public void setUsuarioId(int usuarioId) {
+		this.usuarioId = usuarioId;
+	}
+
+	public void setDocumento(String documento) {
+		this.documento = documento;
+	}
+
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
+	}
+
+	public void setApellido(String apellido) {
+		this.apellido = apellido;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public void setEstado(boolean estado) {
+		this.estado = estado;
+	}
+	
+	public void setContrasena(String contrasena) {
+		this.contrasena = contrasena;
+	}
+
+
 }
 

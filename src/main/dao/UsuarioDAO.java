@@ -7,6 +7,7 @@ import main.model.Usuario;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,5 +94,96 @@ public class UsuarioDAO {
 	        System.out.println("-----------");
 	    }
 	}
+	
+	public static boolean agregarUsuario(Usuario usuario) {
+        String sql = "INSERT INTO usuario (documento, nombre, apellido, email, estado, contrasena_hash, rol_id) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = Conexion.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, usuario.getDocumento());
+            stmt.setString(2, usuario.getNombre());
+            stmt.setString(3, usuario.getApellido());
+            stmt.setString(4, usuario.getEmail());
+            stmt.setBoolean(5, usuario.getEstado());
+            stmt.setString(6,usuario.getContrasena());
+            stmt.setInt(7, usuario.getRolId());
+
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean modificarUsuario(Usuario usuario) {
+        String sql = "UPDATE usuario SET documento = ?, nombre = ?, apellido = ?, email = ?, estado = ?, rol_id = ? " +
+                     "WHERE usuario_id = ?";
+        try (Connection conn = Conexion.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, usuario.getDocumento());
+            stmt.setString(2, usuario.getNombre());
+            stmt.setString(3, usuario.getApellido());
+            stmt.setString(4, usuario.getEmail());
+            stmt.setBoolean(5, usuario.getEstado());
+            stmt.setInt(6, usuario.getRolId());
+            stmt.setInt(7, usuario.getUsuarioId());
+
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean eliminarUsuario(int usuarioId) {
+        String sql = "DELETE FROM usuario WHERE usuario_id = ?";
+        try (Connection conn = Conexion.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, usuarioId);
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+   
+    }
+    
+    
+    public static Usuario buscarPorDocumento(String documento) {
+        String sql = "SELECT * FROM usuario WHERE documento = ?";
+
+        try (Connection conn = Conexion.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, documento);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                Usuario usuario = new Usuario();
+                usuario.setUsuarioId(rs.getInt("usuario_id"));
+                usuario.setDocumento(rs.getString("documento"));
+                usuario.setNombre(rs.getString("nombre"));
+                usuario.setApellido(rs.getString("apellido"));
+                usuario.setEmail(rs.getString("email"));
+                usuario.setEstado(rs.getBoolean("estado"));
+                usuario.setRol_id(rs.getInt("rol_id"));
+                return usuario;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null; // No se encontró usuario con ese documento
+    }
 
 }
