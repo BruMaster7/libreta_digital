@@ -2,12 +2,19 @@ package main.model;
 
 public class Curso {
 	private int id;
+	@Override
+	public String toString() {
+		return "Curso [id=" + id + ", nombre_curso=" + nombre_curso + ", descripcion=" + descripcion + ", estado="
+				+ estado + "]";
+	}
+
 	private String nombre_curso;
 	private String descripcion;
 	private boolean estado;
 	
-	public Curso(String nombre_curso, String descripcion, boolean estado) {
+	public Curso(int id, String nombre_curso, String descripcion, boolean estado) {
 		super();
+		this.setId(id);
 		this.nombre_curso = nombre_curso;
 		this.descripcion = descripcion;
 		this.estado = estado;
@@ -35,6 +42,14 @@ public class Curso {
 
 	public void setEstado(boolean estado) {
 		this.estado = estado;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 	
 	

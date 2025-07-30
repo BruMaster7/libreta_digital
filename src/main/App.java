@@ -1,7 +1,9 @@
 package main;
 
 import main.config.Conexion;
+import main.dao.CursoDAO;
 import main.dao.UsuarioDAO;
+import main.model.Curso;
 import main.model.Usuario;
 import main.services.UsuarioService;
 
@@ -21,7 +23,8 @@ public class App {
 	            System.out.println("2. Modificar usuario");
 	            System.out.println("3. Eliminar usuario");
 	            System.out.println("4. Buscar usuario por documento");
-	            System.out.println("5. Salir");
+	            System.out.println("5. Listar Cursos");
+	            System.out.println("6. Salir");
 	            System.out.print("Selecciona una opción: ");
 	            opcion = sc.nextInt();
 	            sc.nextLine(); // limpiar buffer
@@ -31,7 +34,8 @@ public class App {
 	                case 2 -> modificarUsuario();
 	                case 3 -> eliminarUsuario();
 	                case 4 -> buscarPorDocumento();
-	                case 5 -> System.out.println("👋 Fin del programa.");
+	                case 5 -> listarCursos();
+	                case 6 -> System.out.println("👋 Fin del programa.");
 	                default -> System.out.println("❌ Opción no válida.");
 	            }
 
@@ -50,6 +54,20 @@ public class App {
 	            System.out.println("❌ Error al registrar usuario.");
 	        }
 	    }
+	    
+	    private static void listarCursos() {
+	    	List<Curso> listaDeCursos = CursoDAO.listarCursos();
+
+	        if (listaDeCursos != null && !listaDeCursos.isEmpty()) {
+	            System.out.println("Lista de Cursos:");
+	            
+	            for (Curso curso : listaDeCursos) {
+	                System.out.println(curso.toString());
+	            }
+	        } else {
+	            System.out.println("No se encontraron cursos o hubo un error al listarlos.");
+	        }
+	    }
 
 	    private static void modificarUsuario() {
 	        System.out.println("\n--- Modificar Usuario ---");
@@ -57,7 +75,7 @@ public class App {
 	        System.out.print("ID del usuario a modificar: ");
 	        int id = sc.nextInt(); sc.nextLine();
 
-	        Usuario usuario = leerDatosUsuario(true); // con ID
+	        Usuario usuario = leerDatosUsuario(true); 
 	        usuario.setUsuarioId(id);
 
 	        boolean exito = UsuarioService.editarUsuario(usuario);
