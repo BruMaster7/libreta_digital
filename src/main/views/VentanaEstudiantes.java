@@ -14,6 +14,12 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
+import main.dao.CalificacionDAO;
+import main.model.CalificacionDetalle;
+import main.model.Usuario;
+import main.services.BoletinCurso;
+import main.views.personalized.TextAreaRenderer;
+
 import java.awt.BorderLayout;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
@@ -22,12 +28,18 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.ListSelectionModel;
 import java.awt.Component;
 import java.awt.Toolkit;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class VentanaEstudiantes extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTable tableLegajo;
+	private static Usuario estudiante;
 
 	/**
 	 * Launch the application.
@@ -36,7 +48,7 @@ public class VentanaEstudiantes extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentanaEstudiantes frame = new VentanaEstudiantes();
+					VentanaEstudiantes frame = new VentanaEstudiantes(estudiante);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -48,7 +60,7 @@ public class VentanaEstudiantes extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentanaEstudiantes() {
+	public VentanaEstudiantes(Usuario estudiante) {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(VentanaEstudiantes.class.getResource("/resources/Libreta.png")));
 		setMinimumSize(new Dimension(1024, 640));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -122,6 +134,41 @@ public class VentanaEstudiantes extends JFrame {
 		lblTitulo4.setFont(new Font("Tw Cen MT Condensed Extra Bold", Font.PLAIN, 28));
 		lblTitulo4.setBackground(new Color(128, 0, 255));
 		panelSuperiorEstudiantes.add(lblTitulo4);
+	    cargarBoletin(estudiante.getId());
 
 	}
+private void cargarBoletin(int estudianteId) {
+    CalificacionDAO dao = new CalificacionDAO();
+    List<CalificacionDetalle> calificaciones = dao.obtenerCalificacionesPorEstudiante(estudianteId);
+
+    Map<String, BoletinCurso> boletinMap = new HashMap<>();
+    for (CalificacionDetalle c : calificaciones) {
+        String curso = c.getNombreCurso();
+        boletinMap.putIfAbsent(curso, new BoletinCurso(curso));
+        boletinMap.get(curso).agregarNota(c.getTipoEvaluacion(), c.getNombreEvaluacion(), c.getNota());
+    }
+
+    // Convertimos los valores a lista y los ordenamos alfabéticamente por asignatura
+    List<BoletinCurso> boletinList = new ArrayList<>(boletinMap.values());
+    boletinList.sort(Comparator.comparing(BoletinCurso::getAsignatura));
+    
+    DefaultTableModel modelo = new DefaultTableModel(
+        new String[]{"Asignatura", "Actividades", "1er Parcial", "2do Parcial", "Promedio", "Faltas"}, 0
+    );
+
+    for (BoletinCurso bc : boletinMap.values()) {
+        modelo.addRow(new Object[]{
+            bc.getAsignatura(),
+            bc.getActividadesStr(),
+            bc.getPrimerParcial() != null ? bc.getPrimerParcial() : "-",
+            bc.getSegundoParcial() != null ? bc.getSegundoParcial() : "-",
+            bc.getPromedio(),
+            "-" 
+        });
+    }
+
+    tableLegajo.setModel(modelo);
+
+    tableLegajo.getColumnModel().getColumn(1).setCellRenderer(new TextAreaRenderer());
+}
 }

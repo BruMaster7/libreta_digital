@@ -24,7 +24,13 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+
+import main.dao.UsuarioDAO;
+import main.model.Usuario;
+import main.services.UsuarioService;
+
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.AbstractListModel;
@@ -33,6 +39,10 @@ import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
 import java.awt.Toolkit;
 import javax.swing.UIManager;
+import java.awt.event.ActionListener;
+import java.sql.Date;
+import java.awt.event.ActionEvent;
+import javax.swing.JPasswordField;
 
 public class VentanaAdmin extends JFrame {
 	
@@ -48,13 +58,21 @@ public class VentanaAdmin extends JFrame {
 	private JTextField textNombreCrearusuario;
 	private JTextField textApellidoCrearusuario;
 	private JTextField textCorreoCrearusuario;
-	private JTextField textPassCrearusuario;
 	private JTextField textCiDarbaja;
 	private JTextField textCiEditarusuario;
 	private JTextField textNombreEditarusuario;
 	private JTextField textApellidoEditarusuario;
-	private JTextField textPassEditarusuario;
 	private JTextField textCorreoEditarusuario;
+	private static Usuario Administrador;
+    private int usuarioIdEditar = -1;
+    private int rolIdEditar = 0;
+    private JPasswordField textPasswordCrearUsuario;
+    private JPasswordField textPasswardEditarUsuario;
+    private JTextField textfechaNacimientoCrearusuario;
+    private JTextField textFechaNacimientoEditarusuario;
+
+
+	
 
 	/**
 	 * Launch the application.
@@ -63,7 +81,7 @@ public class VentanaAdmin extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentanaAdmin frame = new VentanaAdmin();
+					VentanaAdmin frame = new VentanaAdmin(Administrador);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -75,7 +93,7 @@ public class VentanaAdmin extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentanaAdmin() {
+	public VentanaAdmin(Usuario Administrador) {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(VentanaAdmin.class.getResource("/resources/Libreta.png")));
 		setMinimumSize(new Dimension(1024, 649));
 		setSize(new Dimension(1082, 699));
@@ -140,6 +158,9 @@ public class VentanaAdmin extends JFrame {
 		comboBoxRol.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		comboBoxRol.setBounds(219, 164, 241, 27);
 		tabCrearusu.add(comboBoxRol);
+		comboBoxRol.addItem("Administrador");
+		comboBoxRol.addItem("Docente");
+		comboBoxRol.addItem("Estudiante");
 		
 		textCiCrearusuario = new JTextField();
 		textCiCrearusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
@@ -162,9 +183,19 @@ public class VentanaAdmin extends JFrame {
 		textCorreoCrearusuario = new JTextField();
 		textCorreoCrearusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
 		textCorreoCrearusuario.setColumns(10);
-		textCorreoCrearusuario.setBounds(219, 374, 241, 33);
+		textCorreoCrearusuario.setBounds(219, 414, 241, 33);
 		tabCrearusu.add(textCorreoCrearusuario);
 		
+		textPasswordCrearUsuario = new JPasswordField();
+		textPasswordCrearUsuario.setBounds(219, 470, 241, 33);
+		tabCrearusu.add(textPasswordCrearUsuario);
+		
+		textfechaNacimientoCrearusuario = new JTextField();
+		textfechaNacimientoCrearusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+		textfechaNacimientoCrearusuario.setColumns(10);
+		textfechaNacimientoCrearusuario.setBounds(219, 370, 241, 33);
+		tabCrearusu.add(textfechaNacimientoCrearusuario);
+		textfechaNacimientoCrearusuario.setText("yyyy-MM-dd");
 		JLabel lblAvatarCrearusuario = new JLabel("");
 		lblAvatarCrearusuario.setIcon(new ImageIcon(VentanaAdmin.class.getResource("/resources/AvatarVioletAchede.png")));
 		lblAvatarCrearusuario.setBounds(581, 177, 241, 230);
@@ -184,27 +215,84 @@ public class VentanaAdmin extends JFrame {
 		lblApellidoCrearusuario.setFont(new Font("Segoe UI", Font.BOLD, 18));
 		lblApellidoCrearusuario.setBounds(117, 324, 92, 22);
 		tabCrearusu.add(lblApellidoCrearusuario);
+
+		JLabel lblFechaNacimientoCrearUsuario = new JLabel("Fecha Nac.:");
+		lblFechaNacimientoCrearUsuario.setFont(new Font("Segoe UI", Font.BOLD, 18));
+		lblFechaNacimientoCrearUsuario.setBounds(108, 374, 101, 22); 
+		tabCrearusu.add(lblFechaNacimientoCrearUsuario);
+
 		
 		JLabel lblCorreoCrearusuario = new JLabel("Correo:");
 		lblCorreoCrearusuario.setFont(new Font("Segoe UI", Font.BOLD, 18));
-		lblCorreoCrearusuario.setBounds(147, 378, 62, 22);
+		lblCorreoCrearusuario.setBounds(147, 425, 62, 22);
 		tabCrearusu.add(lblCorreoCrearusuario);
 		
 		JLabel lblPassCrearusuario = new JLabel("Contraseña:");
 		lblPassCrearusuario.setFont(new Font("Segoe UI", Font.BOLD, 18));
-		lblPassCrearusuario.setBounds(108, 435, 101, 22);
+		lblPassCrearusuario.setBounds(108, 471, 101, 22);
 		tabCrearusu.add(lblPassCrearusuario);
-		
-		textPassCrearusuario = new JTextField();
-		textPassCrearusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-		textPassCrearusuario.setColumns(10);
-		textPassCrearusuario.setBounds(219, 431, 241, 33);
-		tabCrearusu.add(textPassCrearusuario);
 		
 		JLabel lblRolCrearUsuario = new JLabel("Rol:");
 		lblRolCrearUsuario.setFont(new Font("Segoe UI", Font.BOLD, 18));
 		lblRolCrearUsuario.setBounds(163, 162, 46, 22);
 		tabCrearusu.add(lblRolCrearUsuario);
+		
+		JButton btnAgregar = new JButton("Agregar");
+		btnAgregar.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+		        try {
+		            Usuario usuario = new Usuario();
+		            usuario.setDocumento(textCiCrearusuario.getText().trim());
+		            usuario.setNombre(textNombreCrearusuario.getText().trim());
+		            usuario.setApellido(textApellidoCrearusuario.getText().trim());
+		            String fechaTexto = textfechaNacimientoCrearusuario.getText().trim();
+		            Date fechaSQL;
+		            try{
+		            	fechaSQL = Date.valueOf(fechaTexto); 
+		            } catch (IllegalArgumentException ex) {
+		            	JOptionPane.showMessageDialog(VentanaAdmin.this, "Formato de fecha inválido. Use yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
+		            	return;
+		            }
+		            usuario.setFechaNacimiento(fechaSQL);
+		            usuario.setEmail(textCorreoCrearusuario.getText().trim());
+		            usuario.setContrasena(textPasswordCrearUsuario.getText().trim());
+		            usuario.setEstado(true); // Por defecto, el usuario se crea activo
+
+		            // Mapeo rol (nombre → número)
+		            String rolSeleccionado = comboBoxRol.getSelectedItem().toString();
+		            int rolId = 0;
+		            switch (rolSeleccionado) {
+		                case "Administrador": rolId = 1; break;
+		                case "Docente": rolId = 2; break;
+		                case "Estudiante": rolId = 3; break;
+		            }
+		            usuario.setRol_id(rolId);
+
+		            boolean exito = UsuarioService.registrarUsuario(usuario);
+
+		            if (exito) {
+		                JOptionPane.showMessageDialog(VentanaAdmin.this, "Usuario creado correctamente.");
+		                textCiCrearusuario.setText("");
+		                textNombreCrearusuario.setText("");
+		                textApellidoCrearusuario.setText("");
+		                textfechaNacimientoCrearusuario.setText("yyyy-MM-dd");
+		                textCorreoCrearusuario.setText("");
+		                textPasswordCrearUsuario.setText("");
+		            } else {
+		                JOptionPane.showMessageDialog(VentanaAdmin.this, "No se pudo crear el usuario.", "Error", JOptionPane.ERROR_MESSAGE);
+		            }
+		        } catch (Exception ex) {
+		            JOptionPane.showMessageDialog(VentanaAdmin.this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		        }
+		    }
+		});
+
+
+		btnAgregar.setForeground(Color.WHITE);
+		btnAgregar.setFont(new Font("Segoe UI", Font.BOLD, 16));
+		btnAgregar.setBackground(new Color(128, 0, 255));
+		btnAgregar.setBounds(597, 439, 104, 33);
+		tabCrearusu.add(btnAgregar);
 		
 		JPanel tabDardebaja = new JPanel();
 		SubtabbedPane.addTab("Dar de baja", null, tabDardebaja, null);
@@ -253,6 +341,11 @@ public class VentanaAdmin extends JFrame {
 		lblAvatarDarbaja.setIcon(new ImageIcon(VentanaAdmin.class.getResource("/resources/AvatarVioletAchede.png")));
 		lblAvatarDarbaja.setBounds(363, 243, 215, 200);
 		tabDardebaja.add(lblAvatarDarbaja);
+
+		JLabel lblNombreDinamicDarbaja = new JLabel("-");
+		lblNombreDinamicDarbaja.setFont(new Font("Segoe Script", Font.BOLD, 15));
+		lblNombreDinamicDarbaja.setBounds(395, 465, 342, 14);
+		tabDardebaja.add(lblNombreDinamicDarbaja);
 		
 		JButton btnCargarDarbaja = new JButton("Cargar ");
 		btnCargarDarbaja.setForeground(new Color(255, 255, 255));
@@ -260,7 +353,33 @@ public class VentanaAdmin extends JFrame {
 		btnCargarDarbaja.setFont(new Font("Segoe UI", Font.BOLD, 14));
 		btnCargarDarbaja.setBounds(588, 184, 89, 23);
 		tabDardebaja.add(btnCargarDarbaja);
-		
+		btnCargarDarbaja.addActionListener(e -> {
+			
+		    try {
+		        String cedula = textCiDarbaja.getText();
+		        Usuario usuario = UsuarioService.buscarUsuarioPorCedula(cedula);
+		        if (usuario != null) {
+		            lblNombreDinamicDarbaja.setText(usuario.getNombre() + " " + usuario.getApellido());
+		            JOptionPane.showMessageDialog(this,
+		                "Usuario encontrado:\n" +
+		                "Cedula: " + usuario.getDocumento() + "\n" +
+		                "Nombre: " + usuario.getNombre() + " " + usuario.getApellido() + "\n" +
+		                "Fecha de Nacimiento: " + usuario.getFechaNacimiento() + "\n" +
+		                "Email: " + usuario.getEmail() + "\n" +
+		                "Estado: " + (usuario.getEstado() ? "Activo" : "Inactivo") + "\n" +
+		                "Rol: " + usuario.getRol_id()
+		            );
+		        } else {
+		            JOptionPane.showMessageDialog(this, "Usuario no encontrado.");
+		            lblNombreDinamicDarbaja.setText("-"); // resetear si no lo encuentra
+
+		        }
+		    } catch (Exception ex) {
+		        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(),
+		            "Error", JOptionPane.ERROR_MESSAGE);
+		    }
+		});
+
 		JLabel lblNombreDarbaja = new JLabel("Nombre:");
 		lblNombreDarbaja.setFont(new Font("Segoe UI", Font.BOLD, 15));
 		lblNombreDarbaja.setBounds(323, 462, 62, 14);
@@ -269,14 +388,32 @@ public class VentanaAdmin extends JFrame {
 		JButton btnDarbaja = new JButton("Dar de baja");
 		btnDarbaja.setFont(new Font("Segoe UI", Font.BOLD, 15));
 		btnDarbaja.setBackground(new Color(255, 81, 81));
-		btnDarbaja.setEnabled(false);
 		btnDarbaja.setBounds(601, 334, 136, 40);
 		tabDardebaja.add(btnDarbaja);
-		
-		JLabel lblNombreDinamicDarbaja = new JLabel("-");
-		lblNombreDinamicDarbaja.setFont(new Font("Segoe Script", Font.BOLD, 15));
-		lblNombreDinamicDarbaja.setBounds(395, 465, 46, 14);
-		tabDardebaja.add(lblNombreDinamicDarbaja);
+		btnDarbaja.addActionListener(e -> {
+		    try {
+		        String cedula = textCiDarbaja.getText();
+		        Usuario usuario = UsuarioService.buscarUsuarioPorCedula(cedula);
+
+		        if (usuario != null) {
+		            int id = usuario.getUsuarioId();
+		            boolean exito = UsuarioService.eliminarUsuario(id);
+
+		            if (exito) {
+		                JOptionPane.showMessageDialog(this, "Usuario dado de baja correctamente.");
+		                textCiDarbaja.setText("");
+		            } else {
+		                JOptionPane.showMessageDialog(this, "No se pudo dar de baja al usuario.", "Error", JOptionPane.ERROR_MESSAGE);
+		            }
+		        } else {
+		            JOptionPane.showMessageDialog(this, "No se encontró un usuario con esa cédula.");
+		        }
+
+		    } catch (Exception ex) {
+		        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		    }
+		});
+
 		
 		JPanel tabEditar = new JPanel();
 		SubtabbedPane.addTab("Editar", null, tabEditar, null);
@@ -326,15 +463,25 @@ public class VentanaAdmin extends JFrame {
 		lblApellidoEditarusuario.setBounds(185, 275, 95, 28);
 		tabEditar.add(lblApellidoEditarusuario);
 		
+		JLabel lblFechaNac = new JLabel("Fecha Nac:");
+        lblFechaNac.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblFechaNac.setBounds(186, 330, 95, 22);
+        tabEditar.add(lblFechaNac);
+		
 		JLabel lblPassEditarusuario = new JLabel("Contraseña:");
 		lblPassEditarusuario.setFont(new Font("Segoe UI", Font.BOLD, 18));
-		lblPassEditarusuario.setBounds(177, 326, 104, 28);
+		lblPassEditarusuario.setBounds(177, 375, 104, 28);
 		tabEditar.add(lblPassEditarusuario);
 		
 		JLabel lblCorreoEditarusuario = new JLabel("Correo:");
 		lblCorreoEditarusuario.setFont(new Font("Segoe UI", Font.BOLD, 18));
-		lblCorreoEditarusuario.setBounds(212, 374, 62, 28);
+		lblCorreoEditarusuario.setBounds(212, 423, 62, 28);
 		tabEditar.add(lblCorreoEditarusuario);
+		
+		JLabel lblEstadoEditarusuario = new JLabel("Estado:");
+		lblEstadoEditarusuario.setFont(new Font("Segoe UI", Font.BOLD, 18));
+		lblEstadoEditarusuario.setBounds(212, 470, 80, 28);
+		tabEditar.add(lblEstadoEditarusuario);
 		
 		textCiEditarusuario = new JTextField();
 		textCiEditarusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
@@ -354,19 +501,29 @@ public class VentanaAdmin extends JFrame {
 		textApellidoEditarusuario.setBounds(284, 272, 241, 33);
 		tabEditar.add(textApellidoEditarusuario);
 		
-		textPassEditarusuario = new JTextField();
-		textPassEditarusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-		textPassEditarusuario.setColumns(10);
-		textPassEditarusuario.setBounds(284, 325, 241, 33);
-		tabEditar.add(textPassEditarusuario);
-		
+		textFechaNacimientoEditarusuario = new JTextField();
+        textFechaNacimientoEditarusuario.setText("yyyy-MM-dd");
+        textFechaNacimientoEditarusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        textFechaNacimientoEditarusuario.setColumns(10);
+        textFechaNacimientoEditarusuario.setBounds(284, 326, 241, 33);
+        tabEditar.add(textFechaNacimientoEditarusuario);
+        
 		textCorreoEditarusuario = new JTextField();
 		textCorreoEditarusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
 		textCorreoEditarusuario.setColumns(10);
-		textCorreoEditarusuario.setBounds(284, 369, 241, 33);
+		textCorreoEditarusuario.setBounds(284, 418, 241, 33);
 		tabEditar.add(textCorreoEditarusuario);
 		
-		JLabel lblAvatarEditarusuario = new JLabel("");
+		textPasswardEditarUsuario = new JPasswordField();
+        textPasswardEditarUsuario.setBounds(284, 370, 241, 33);
+        tabEditar.add(textPasswardEditarUsuario);
+        
+        JComboBox<String> comboEstadoEditarusuario = new JComboBox<>(new String[]{"true", "false"});
+        comboEstadoEditarusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        comboEstadoEditarusuario.setBounds(284, 470, 100, 33);
+        tabEditar.add(comboEstadoEditarusuario);
+		
+        JLabel lblAvatarEditarusuario = new JLabel("");
 		lblAvatarEditarusuario.setIcon(new ImageIcon(VentanaAdmin.class.getResource("/resources/AvatarVioletAchede.png")));
 		lblAvatarEditarusuario.setBounds(601, 184, 215, 200);
 		tabEditar.add(lblAvatarEditarusuario);
@@ -377,13 +534,91 @@ public class VentanaAdmin extends JFrame {
 		btnCargarEditarusuario.setFont(new Font("Segoe UI", Font.BOLD, 10));
 		btnCargarEditarusuario.setBounds(527, 169, 89, 23);
 		tabEditar.add(btnCargarEditarusuario);
+		//agregar accion al boton cargar
+		btnCargarEditarusuario.addActionListener(e -> {
+		    try {
+		        String cedula = textCiEditarusuario.getText();
+		        Usuario usuario = UsuarioService.buscarUsuarioPorCedula(cedula);
+
+		        if (usuario != null) {
+		        	usuarioIdEditar = usuario.getUsuarioId();
+		        	rolIdEditar = usuario.getRolId();
+		            textNombreEditarusuario.setText(usuario.getNombre());
+		            textApellidoEditarusuario.setText(usuario.getApellido());
+		            textFechaNacimientoEditarusuario.setText(usuario.getFechaNacimiento().toString());
+		            textCorreoEditarusuario.setText(usuario.getEmail());
+		            textPasswardEditarUsuario.setText(usuario.getContrasena());
+		            comboEstadoEditarusuario.setSelectedItem(String.valueOf(usuario.getEstado()));
+
+		           
+		        } else {
+		            JOptionPane.showMessageDialog(this, "Usuario no encontrado.");
+		            textCiEditarusuario.setText("");
+		            textNombreEditarusuario.setText("");
+		            textApellidoEditarusuario.setText("");
+		            textFechaNacimientoEditarusuario.setText("yyyy-MM-dd");
+		            textCorreoEditarusuario.setText("");
+		            textPasswardEditarUsuario.setText("");
+		        }
+		    } catch (Exception ex) {
+		        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		    }
+		});
+
 		
 		JButton btnEditar = new JButton("Editar");
 		btnEditar.setForeground(new Color(255, 255, 255));
 		btnEditar.setFont(new Font("Segoe UI", Font.BOLD, 16));
 		btnEditar.setBackground(new Color(128, 0, 255));
-		btnEditar.setBounds(343, 427, 104, 33);
+		btnEditar.setBounds(649, 431, 104, 33);
 		tabEditar.add(btnEditar);
+		btnEditar.addActionListener(e -> {
+		    try {
+		        if (usuarioIdEditar == -1) {
+		            JOptionPane.showMessageDialog(this, "Primero cargue un usuario para editar.");
+		            return;
+		        }
+
+		        Usuario usuario = new Usuario();
+		        usuario.setUsuarioId(usuarioIdEditar);           // ID del usuario a editar
+		        usuario.setDocumento(textCiEditarusuario.getText().trim());
+		        usuario.setNombre(textNombreEditarusuario.getText().trim());
+		        usuario.setApellido(textApellidoEditarusuario.getText().trim());
+		        Date fechaSQL;
+	            try{
+	            	fechaSQL = Date.valueOf(textFechaNacimientoEditarusuario.getText().trim()); 
+	            } catch (IllegalArgumentException ex) {
+	            	JOptionPane.showMessageDialog(VentanaAdmin.this, "Formato de fecha inválido. Use yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
+	            	return;
+	            }
+	            usuario.setFechaNacimiento(fechaSQL);
+		        
+		        usuario.setContrasena(textPasswardEditarUsuario.getText().trim());
+		        usuario.setEmail(textCorreoEditarusuario.getText().trim());
+		        usuario.setRol_id(rolIdEditar);                   // mantenemos el rol que ya tenía
+		        usuario.setEstado(Boolean.parseBoolean((String) comboEstadoEditarusuario.getSelectedItem()));
+
+		        boolean exito = UsuarioService.editarUsuario(usuario);
+
+		        if (exito) {
+		            JOptionPane.showMessageDialog(this, "Usuario actualizado correctamente.");
+		            usuarioIdEditar = -1; // reset
+		            rolIdEditar = 0;      // reset
+		            textCiEditarusuario.setText("");
+		            textNombreEditarusuario.setText("");
+		            textApellidoEditarusuario.setText("");
+		            textFechaNacimientoEditarusuario.setText("yyyy-MM-dd");
+		            textPasswardEditarUsuario.setText("");
+		            textCorreoEditarusuario.setText("");
+		            comboEstadoEditarusuario.setSelectedIndex(0);
+		           
+		        } else {
+		            JOptionPane.showMessageDialog(this, "No se pudo actualizar el usuario.", "Error", JOptionPane.ERROR_MESSAGE);
+		        }
+		    } catch (Exception ex) {
+		        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		    }
+		});
 		
 		JPanel tabVisadoAdm = new JPanel();
 		tabbedPane.addTab("Visado\r\n", new ImageIcon(VentanaAdmin.class.getResource("/resources/Libreta.ico")), tabVisadoAdm, null);

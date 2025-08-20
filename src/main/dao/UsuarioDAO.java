@@ -17,7 +17,7 @@ public class UsuarioDAO {
 	public static Usuario login(String email, String contrasenaPlano) {
 	    Usuario usuario = null;
 
-	    String sql = "SELECT usuario_id, documento, nombre, apellido, email, estado, rol_id FROM usuario " +
+	    String sql = "SELECT usuario_id, documento, nombre, apellido, fecha_nacimiento, email, estado, rol_id FROM usuario " +
 	                 "WHERE email = ? AND contrasena_hash = ?";
 
 	    try (Connection conn = Conexion.conectar();
@@ -34,6 +34,7 @@ public class UsuarioDAO {
                     rs.getString("documento"),
 	                rs.getString("nombre"),
 	                rs.getString("apellido"),
+	                rs.getDate("fecha_nacimiento"),
 	                rs.getString("email"),
 	                rs.getBoolean("estado"),
                     rs.getInt("rol_id")
@@ -50,7 +51,7 @@ public class UsuarioDAO {
 	
 	public static List<Usuario> listarUsuarios() {
         List<Usuario> lista = new ArrayList<>();
-        String sql = "SELECT usuario_id, documento, nombre, apellido, email, estado, rol_id FROM usuario";
+        String sql = "SELECT usuario_id, documento, nombre, apellido, fecha_nacimiento, email, estado, rol_id FROM usuario";
 
         try (Connection conn = Conexion.conectar();
              Statement stmt = conn.createStatement();
@@ -62,6 +63,7 @@ public class UsuarioDAO {
                         rs.getString("documento"),
                         rs.getString("nombre"),
                         rs.getString("apellido"),
+                        rs.getDate("fecha_nacimiento"),
                         rs.getString("email"),
                         rs.getBoolean("estado"),
                         rs.getInt("rol_id")
@@ -96,18 +98,19 @@ public class UsuarioDAO {
 	}
 	
 	public static boolean agregarUsuario(Usuario usuario) {
-        String sql = "INSERT INTO usuario (documento, nombre, apellido, email, estado, contrasena_hash, rol_id) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO usuario (documento, nombre, apellido, fecha_nacimiento, email, estado, contrasena_hash, rol_id) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?,?)";
         try (Connection conn = Conexion.conectar();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, usuario.getDocumento());
             stmt.setString(2, usuario.getNombre());
             stmt.setString(3, usuario.getApellido());
-            stmt.setString(4, usuario.getEmail());
-            stmt.setBoolean(5, usuario.getEstado());
-            stmt.setString(6,usuario.getContrasena());
-            stmt.setInt(7, usuario.getRolId());
+            stmt.setDate(4, usuario.getFechaNacimiento());
+            stmt.setString(5, usuario.getEmail());
+            stmt.setBoolean(6, usuario.getEstado());
+            stmt.setString(7,usuario.getContrasena());
+            stmt.setInt(8, usuario.getRolId());
 
             int filasAfectadas = stmt.executeUpdate();
             return filasAfectadas > 0;
@@ -119,7 +122,7 @@ public class UsuarioDAO {
     }
 
     public static boolean modificarUsuario(Usuario usuario) {
-        String sql = "UPDATE usuario SET documento = ?, nombre = ?, apellido = ?, email = ?, estado = ?, rol_id = ? " +
+        String sql = "UPDATE usuario SET documento = ?, nombre = ?, apellido = ?, fecha_nacimiento = ?, email = ?, estado = ?, rol_id = ? " +
                      "WHERE usuario_id = ?";
         try (Connection conn = Conexion.conectar();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -127,12 +130,15 @@ public class UsuarioDAO {
             stmt.setString(1, usuario.getDocumento());
             stmt.setString(2, usuario.getNombre());
             stmt.setString(3, usuario.getApellido());
-            stmt.setString(4, usuario.getEmail());
-            stmt.setBoolean(5, usuario.getEstado());
-            stmt.setInt(6, usuario.getRolId());
-            stmt.setInt(7, usuario.getUsuarioId());
+            stmt.setDate(4, usuario.getFechaNacimiento());
+            stmt.setString(5, usuario.getEmail());
+            stmt.setBoolean(6, usuario.getEstado());
+            stmt.setInt(7, usuario.getRolId());
+            stmt.setInt(8, usuario.getUsuarioId());
 
             int filasAfectadas = stmt.executeUpdate();
+            System.out.println("UPDATE ejecutado, filas afectadas=" + filasAfectadas);
+
             return filasAfectadas > 0;
 
         } catch (SQLException e) {
@@ -142,7 +148,7 @@ public class UsuarioDAO {
     }
 
     public static boolean eliminarUsuario(int usuarioId) {
-        String sql = "DELETE FROM usuario WHERE usuario_id = ?";
+        String sql = "UPDATE usuario SET estado = false WHERE usuario_id = ?";
         try (Connection conn = Conexion.conectar();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -154,8 +160,8 @@ public class UsuarioDAO {
             e.printStackTrace();
             return false;
         }
-   
     }
+
     
     
     public static Usuario buscarPorDocumento(String documento) {
@@ -173,9 +179,11 @@ public class UsuarioDAO {
                 usuario.setDocumento(rs.getString("documento"));
                 usuario.setNombre(rs.getString("nombre"));
                 usuario.setApellido(rs.getString("apellido"));
+                usuario.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
                 usuario.setEmail(rs.getString("email"));
                 usuario.setEstado(rs.getBoolean("estado"));
                 usuario.setRol_id(rs.getInt("rol_id"));
+                usuario.setContrasena(rs.getString("contrasena_hash"));
                 return usuario;
             }
 

@@ -1,6 +1,11 @@
 package main;
 
 import main.config.Conexion;
+import io.github.cdimascio.dotenv.Dotenv;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
 import main.dao.CursoDAO;
 import main.dao.UsuarioDAO;
 import main.model.Curso;
@@ -11,13 +16,15 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Scanner;
 
+import io.github.cdimascio.dotenv.Dotenv;
+
 public class App {
 	 private static final Scanner sc = new Scanner(System.in);
 
-	    public static void main(String[] args) {
+	    public static void main(String[] args)  {
 	        int opcion;
-
-	        do {
+	        
+            do {
 	            System.out.println("\n--- MENÚ USUARIOS ---");
 	            System.out.println("1. Agregar usuario");
 	            System.out.println("2. Modificar usuario");
@@ -44,7 +51,7 @@ public class App {
 
 	    private static void agregarUsuario() {
 	        System.out.println("\n--- Agregar Usuario ---");
-
+	        try {
 	        Usuario usuario = leerDatosUsuario(false); // sin ID
 	        boolean exito = UsuarioService.registrarUsuario(usuario);
 
@@ -52,6 +59,9 @@ public class App {
 	            System.out.println("✅ Usuario registrado correctamente.");
 	        } else {
 	            System.out.println("❌ Error al registrar usuario.");
+	        }}
+	        catch (Exception e) {
+	            System.out.println("❌ Error: " + e.getMessage());
 	        }
 	    }
 	    
@@ -71,6 +81,7 @@ public class App {
 
 	    private static void modificarUsuario() {
 	        System.out.println("\n--- Modificar Usuario ---");
+	        try {
 
 	        System.out.print("ID del usuario a modificar: ");
 	        int id = sc.nextInt(); sc.nextLine();
@@ -84,6 +95,9 @@ public class App {
 	            System.out.println("✅ Usuario modificado correctamente.");
 	        } else {
 	            System.out.println("❌ Error al modificar usuario.");
+	        }
+	    } catch (Exception e) {
+	            System.out.println("❌ Error: " + e.getMessage());
 	        }
 	    }
 
