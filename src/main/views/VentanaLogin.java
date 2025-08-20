@@ -148,8 +148,22 @@ public class VentanaLogin extends JFrame {
 				    	System.out.println("El usuario es un Estudiante");
 				    	UsuarioDAO.verBoletinEstudiante(userLogueado.getId());
 		                // Si es estudiante, ir a la vista del boletín
-		                VentanaEstudiante boletinView = new VentanaEstudiante(userLogueado);
+		                VentanaEstudiantes boletinView = new VentanaEstudiantes(userLogueado);
 		                boletinView.setVisible(true);
+		                dispose(); // Cierra la ventana de login
+				    }
+				    else if (userLogueado.getRolId() == 2) {
+				    	System.out.println("El usuario es un Docente");
+				    	// Si es docente, abrir la ventana de gestión de estudiantes
+				    	VentanaDocentes docenteView = new VentanaDocentes(userLogueado);
+		                docenteView.setVisible(true);
+		                dispose(); // Cierra la ventana de login
+				    }
+				    else if (userLogueado.getRolId() == 1) {
+				    	System.out.println("El usuario es un Administrador");
+				    	// Si es administrador, abrir la ventana de gestión de usuarios
+				    	VentanaAdmin adminView = new VentanaAdmin(userLogueado);
+		                adminView.setVisible(true);
 		                dispose(); // Cierra la ventana de login
 				    }
 				    // Abrir ventana principal o continuar al sistema

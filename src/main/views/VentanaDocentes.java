@@ -15,6 +15,9 @@ import javax.swing.JTable;
 import javax.swing.JScrollPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+
+import main.model.Usuario;
+
 import javax.swing.JButton;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.JTextField;
@@ -55,6 +58,8 @@ public class VentanaDocentes extends JFrame {
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
 	private final ButtonGroup buttonGroup_2 = new ButtonGroup();
 	private final ButtonGroup buttonGroup_3 = new ButtonGroup();
+	private static Usuario Docente;
+
 
 	/**
 	 * Launch the application.
@@ -63,7 +68,7 @@ public class VentanaDocentes extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentanaDocentes frame = new VentanaDocentes();
+					VentanaDocentes frame = new VentanaDocentes(Docente);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -75,7 +80,7 @@ public class VentanaDocentes extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentanaDocentes() {
+	public VentanaDocentes(Usuario Docente) {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(VentanaDocentes.class.getResource("/resources/Libreta.png")));
 		setTitle("Gestión de curso");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
