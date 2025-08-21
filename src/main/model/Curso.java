@@ -4,13 +4,14 @@ public class Curso {
 	private int id;
 	@Override
 	public String toString() {
-		return "Curso [id=" + id + ", nombre_curso=" + nombre_curso + ", descripcion=" + descripcion + ", estado="
-				+ estado + "]";
+		return nombre_curso;
 	}
 
 	private String nombre_curso;
 	private String descripcion;
 	private boolean estado;
+	
+	public Curso() {}
 	
 	public Curso(int id, String nombre_curso, String descripcion, boolean estado) {
 		super();
@@ -51,6 +52,7 @@ public class Curso {
 	public void setId(int id) {
 		this.id = id;
 	}
+	
 	
 	
 }

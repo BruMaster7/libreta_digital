@@ -155,8 +155,8 @@ public class VentanaLogin extends JFrame {
 				    else if (userLogueado.getRolId() == 2) {
 				    	System.out.println("El usuario es un Docente");
 				    	// Si es docente, abrir la ventana de gestión de estudiantes
-				    	VentanaDocentes docenteView = new VentanaDocentes(userLogueado);
-		                docenteView.setVisible(true);
+				    	SeleccionCursos docenteCursos = new SeleccionCursos(userLogueado);
+		                docenteCursos.setVisible(true);
 		                dispose(); // Cierra la ventana de login
 				    }
 				    else if (userLogueado.getRolId() == 1) {
