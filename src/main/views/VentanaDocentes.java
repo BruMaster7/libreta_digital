@@ -16,6 +16,12 @@ import javax.swing.JScrollPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
+import main.config.Conexion;
+import main.dao.CalificacionDAO;
+import main.dao.UsuarioCursoDAO;
+import main.dao.UsuarioDAO;
+import main.model.CalificacionDetalle;
+import main.model.Curso;
 import main.model.Usuario;
 
 import javax.swing.JButton;
@@ -26,6 +32,10 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JTextArea;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JRadioButton;
@@ -34,6 +44,7 @@ import java.awt.GridLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.AbstractListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.MatteBorder;
@@ -59,6 +70,67 @@ public class VentanaDocentes extends JFrame {
 	private final ButtonGroup buttonGroup_2 = new ButtonGroup();
 	private final ButtonGroup buttonGroup_3 = new ButtonGroup();
 	private static Usuario Docente;
+	private static Curso Curso;
+    private UsuarioCursoDAO usuarioCursoDAO;
+    private CalificacionDAO calificacionDAO;
+    
+	// Clase interna para el resumen del estudiante en el curso
+    public class ResumenEstudianteCurso {
+        private String documento;
+        private String nombre;
+        private String apellido;
+        private List<Double> actividades = new ArrayList<>();
+        private Double primerParcial;
+        private Double segundoParcial;
+        private int faltas; // Aun no tengo este dato, falta hacer la funcionalidad
+
+        public ResumenEstudianteCurso(String documento, String nombre, String apellido) {
+            this.documento = documento;
+            this.nombre = nombre;
+            this.apellido = apellido;
+        }
+
+        // Getters y setters
+        public String getDocumento() { return documento; }
+        public String getNombre() { return nombre; }
+        public String getApellido() { return apellido; }
+        public List<Double> getActividades() { return actividades; }
+        public Double getPrimerParcial() { return primerParcial; }
+        public void setPrimerParcial(Double primerParcial) { this.primerParcial = primerParcial; }
+        public Double getSegundoParcial() { return segundoParcial; }
+        public void setSegundoParcial(Double segundoParcial) { this.segundoParcial = segundoParcial; }
+        public int getFaltas() { return faltas; }
+        public void setFaltas(int faltas) { this.faltas = faltas; }
+        
+        public String getActividadesStr() {
+            if (actividades.isEmpty()) return "-";
+            return actividades.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+        }
+        
+        public Double getPromedio() {
+            double suma = 0;
+            int count = 0;
+            
+            if (primerParcial != null) {
+                suma += primerParcial;
+                count++;
+            }
+            if (segundoParcial != null) {
+                suma += segundoParcial;
+                count++;
+            }
+            for (Double act : actividades) {
+                suma += act;
+                count++;
+            }
+            
+            return count > 0 ? suma / count : 0.0;
+        }
+    }
+
+
 
 
 	/**
@@ -68,7 +140,7 @@ public class VentanaDocentes extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					VentanaDocentes frame = new VentanaDocentes(Docente);
+					VentanaDocentes frame = new VentanaDocentes(Docente, Curso);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -80,7 +152,12 @@ public class VentanaDocentes extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public VentanaDocentes(Usuario Docente) {
+	public VentanaDocentes(Usuario Docente, Curso Curso) {
+		VentanaDocentes.Docente = Docente; // asignar usuario
+	    VentanaDocentes.Curso = Curso;     // asignar curso
+	    
+	    this.usuarioCursoDAO = new UsuarioCursoDAO(Conexion.conectar());
+	    this.calificacionDAO = new CalificacionDAO();
 		setIconImage(Toolkit.getDefaultToolkit().getImage(VentanaDocentes.class.getResource("/resources/Libreta.png")));
 		setTitle("Gestión de curso");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -125,32 +202,13 @@ public class VentanaDocentes extends JFrame {
 		tableEstudiantes.setFont(new Font("Arial", Font.BOLD, 14));
 		tableEstudiantes.setForeground(new Color(0, 0, 0));
 		tableEstudiantes.setModel(new DefaultTableModel(
-			new Object[][] {
-				{"", null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-				{null, null, null, null, null, null, null},
-			},
-			new String[] {
-				"Foto", "Estudiante", "Actividades", "1er Parcial", "2do Parcial", "Faltas", "Acciones"
-			}
-		));
+	            new Object[][] {},
+	            new String[] {
+	                "Documento", "Nombre", "Apellido", "Actividades",
+	                "Primer Parcial", "Segundo Parcial", "Promedio", "Faltas"
+	            }
+	        ));
+		cargarEstudiantes();
 		tableEstudiantes.getColumnModel().getColumn(3).setPreferredWidth(68);
 		tableEstudiantes.getColumnModel().getColumn(3).setMinWidth(42);
 		tableEstudiantes.getColumnModel().getColumn(3).setMaxWidth(800);
@@ -578,6 +636,56 @@ public class VentanaDocentes extends JFrame {
 		listDesarrollos.setBackground(new Color(230, 204, 255));
 		listDesarrollos.setBounds(756, 186, 141, 267);
 		panelDesarrollo.add(listDesarrollos);
-
 	}
+	
+	private void cargarEstudiantes() {
+        try {
+            // Obtener estudiantes activos del curso
+            List<Usuario> estudiantes = usuarioCursoDAO.obtenerEstudiantesActivosPorCurso(Curso.getId());
+            DefaultTableModel model = (DefaultTableModel) tableEstudiantes.getModel();
+            model.setRowCount(0); // Limpiar tabla existente
+
+            for (Usuario estudiante : estudiantes) {
+                // Obtener calificaciones del estudiante en este curso
+                List<CalificacionDetalle> calificaciones = 
+                    calificacionDAO.obtenerCalificacionesPorEstudianteYCurso(
+                        estudiante.getUsuarioId(), Curso.getId());
+
+                // Crear resumen del estudiante
+                ResumenEstudianteCurso resumen = new ResumenEstudianteCurso(
+                    estudiante.getDocumento(),
+                    estudiante.getNombre(),
+                    estudiante.getApellido()
+                );
+
+                // Procesar calificaciones
+                for (CalificacionDetalle calificacion : calificaciones) {
+                    String tipo = calificacion.getTipoEvaluacion();
+                    double nota = calificacion.getNota();
+
+                    if ("Actividad".equalsIgnoreCase(tipo)) {
+                        resumen.getActividades().add(nota);
+                    } else if ("Primer Parcial".equalsIgnoreCase(tipo)) {
+                        resumen.setPrimerParcial(nota);
+                    } else if ("Segundo Parcial".equalsIgnoreCase(tipo)) {
+                        resumen.setSegundoParcial(nota);
+                    }
+                }
+
+                // Añadir fila a la tabla
+                model.addRow(new Object[]{
+                    resumen.getDocumento(),
+                    resumen.getNombre(),
+                    resumen.getApellido(),
+                    resumen.getActividadesStr(),
+                    resumen.getPrimerParcial(),
+                    resumen.getSegundoParcial(),
+                    resumen.getPromedio(),
+                    resumen.getFaltas() // Puede ser 0 o null temporalmente
+                });
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar estudiantes: " + e.getMessage());
+        }
+    }
 }

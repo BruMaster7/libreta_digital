@@ -1,5 +1,6 @@
 package main.dao;
 
+import main.model.Calificacion;
 import main.model.CalificacionDetalle;
 import main.config.Conexion;
 
@@ -54,6 +55,41 @@ public class CalificacionDAO {
 
         return lista;
     }
+
+    public List<CalificacionDetalle> obtenerCalificacionesPorEstudianteYCurso(int usuarioId, int cursoId) {
+        List<CalificacionDetalle> lista = new ArrayList<>();
+        String sql = """
+            SELECT c.nombre_curso, e.nombre_evaluacion, 
+                   e.tipo_evaluacion, cal.nota
+            FROM calificacion cal
+            JOIN evaluacion e ON cal.evaluacion_id = e.evaluacion_id
+            JOIN curso c ON e.curso_id = c.curso_id
+            WHERE cal.usuario_id = ? AND c.curso_id = ?
+            ORDER BY e.fecha_evaluacion
+            """;
+        
+        try (Connection conexion = Conexion.conectar();
+             PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            
+            stmt.setInt(1, usuarioId);
+            stmt.setInt(2, cursoId);
+            ResultSet rs = stmt.executeQuery();
+            
+            while (rs.next()) {
+                CalificacionDetalle detalle = new CalificacionDetalle(
+                    rs.getString("nombre_curso"),
+                    rs.getString("nombre_evaluacion"),
+                    rs.getString("tipo_evaluacion"),
+                    rs.getFloat("nota")
+                );
+                lista.add(detalle);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener calificaciones: " + e.getMessage());
+        }
+        return lista;
+    }
+	
 }
 
 

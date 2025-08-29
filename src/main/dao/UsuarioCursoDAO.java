@@ -7,7 +7,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.config.Conexion;
 import main.model.Curso;
+import main.model.Usuario;
 
 public class UsuarioCursoDAO {
     
@@ -39,5 +41,43 @@ public class UsuarioCursoDAO {
         }
         return cursos;
     }
+    
+    public List<Usuario> obtenerEstudiantesActivosPorCurso(int cursoId) {
+        List<Usuario> estudiantes = new ArrayList<>();
+
+        String sql = "SELECT u.* " +
+                     "FROM usuario u " +
+                     "INNER JOIN usuario_curso uc ON u.usuario_id = uc.usuario_id " +
+                     "WHERE uc.curso_id = ? " +
+                     "AND u.estado = TRUE " +
+                     "AND u.rol_id NOT IN (1, 2)"; 
+                     // 1 = Admin, 2 = Docente
+
+        try (Connection conn = Conexion.conectar();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, cursoId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Usuario u = new Usuario();
+                    u.setUsuarioId(rs.getInt("usuario_id"));
+                    u.setDocumento(rs.getString("documento"));
+                    u.setNombre(rs.getString("nombre"));
+                    u.setApellido(rs.getString("apellido"));
+                    u.setEmail(rs.getString("email"));
+                    u.setEstado(rs.getBoolean("estado"));
+                    u.setRol_id(rs.getInt("rol_id"));
+
+                    estudiantes.add(u);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return estudiantes;
+    }
+
 }
 

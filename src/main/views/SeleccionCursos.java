@@ -118,6 +118,8 @@ public class SeleccionCursos extends JFrame {
             if (seleccionado != null) {
                 JOptionPane.showMessageDialog(this, 
                         "Ingresando al curso: " + seleccionado.getNombre_curso());
+                VentanaDocentes miCurso = new VentanaDocentes(Docente, seleccionado);
+                miCurso.setVisible(true);
                 // aquí abrirías la siguiente vista, pasando el curso seleccionado
             } else {
                 JOptionPane.showMessageDialog(this, "Seleccione un curso primero.");

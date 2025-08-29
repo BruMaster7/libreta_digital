@@ -6,6 +6,10 @@ import java.util.stream.Collectors;
 
 
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class BoletinCurso {
     private String asignatura;
     private List<String> actividades = new ArrayList<>();
@@ -65,4 +69,3 @@ public class BoletinCurso {
         return String.format("%.2f", suma / notas.size());
     }
 }
-

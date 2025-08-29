@@ -148,7 +148,7 @@ public class VentanaLogin extends JFrame {
 				    	System.out.println("El usuario es un Estudiante");
 				    	UsuarioDAO.verBoletinEstudiante(userLogueado.getId());
 		                // Si es estudiante, ir a la vista del boletín
-		                VentanaEstudiantes boletinView = new VentanaEstudiantes(userLogueado);
+		                VentanaEstudiante boletinView = new VentanaEstudiante(userLogueado);
 		                boletinView.setVisible(true);
 		                dispose(); // Cierra la ventana de login
 				    }
