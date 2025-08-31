@@ -665,9 +665,9 @@ public class VentanaDocentes extends JFrame {
 
                     if ("Actividad".equalsIgnoreCase(tipo)) {
                         resumen.getActividades().add(nota);
-                    } else if ("Primer Parcial".equalsIgnoreCase(tipo)) {
+                    } else if ("Parcial1".equalsIgnoreCase(tipo)) {
                         resumen.setPrimerParcial(nota);
-                    } else if ("Segundo Parcial".equalsIgnoreCase(tipo)) {
+                    } else if ("Parcial2".equalsIgnoreCase(tipo)) {
                         resumen.setSegundoParcial(nota);
                     }
                 }
