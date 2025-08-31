@@ -17,9 +17,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
 import main.config.Conexion;
+import main.dao.AsistenciaDAO;
 import main.dao.CalificacionDAO;
 import main.dao.UsuarioCursoDAO;
 import main.dao.UsuarioDAO;
+import main.model.Asistencia;
 import main.model.CalificacionDetalle;
 import main.model.Curso;
 import main.model.Usuario;
@@ -34,6 +36,9 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JTextArea;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -75,6 +80,8 @@ public class VentanaDocentes extends JFrame {
 	private static Curso Curso;
     private UsuarioCursoDAO usuarioCursoDAO;
     private CalificacionDAO calificacionDAO;
+    private JTextField FechaField;
+    private List<Usuario> estudiantesDelCurso;
     
 	// Clase interna para el resumen del estudiante en el curso
     public class ResumenEstudianteCurso {
@@ -405,11 +412,22 @@ public class VentanaDocentes extends JFrame {
 		JPanel panelInfPasarLista = new JPanel();
 		panelPasarLista.add(panelInfPasarLista, BorderLayout.SOUTH);
 		
+		JLabel FechaLista = new JLabel("Fecha:");
+		FechaLista.setFont(new Font("Arial", Font.BOLD, 14));
+		panelInfPasarLista.add(FechaLista);
+		
+		FechaField = new JTextField();
+		FechaField.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		FechaField.setColumns(10);
+		panelInfPasarLista.add(FechaField);
+		
 		JButton btnGuardarLista = new JButton("Guardar lista");
 		btnGuardarLista.setForeground(new Color(255, 255, 255));
 		btnGuardarLista.setBackground(new Color(128, 0, 255));
 		btnGuardarLista.setFont(new Font("Arial", Font.BOLD, 14));
 		panelInfPasarLista.add(btnGuardarLista);
+		
+		//Acción GUARDAR LISTA
 		
 		JScrollPane scrollPane_1 = new JScrollPane();
 		panelPasarLista.add(scrollPane_1, BorderLayout.CENTER);
@@ -430,6 +448,13 @@ public class VentanaDocentes extends JFrame {
 		for (Usuario est : estudiantes) {
 		    modelo.addRow(new Object[] { est.getNombre() + " " + est.getApellido(), null });
 		}
+		// Dentro del constructor, al crear la tabla de pasar lista:
+		estudiantesDelCurso = usuarioCursoDAO.obtenerEstudiantesActivosPorCurso(Curso.getId());
+		
+		btnGuardarLista.addActionListener(e -> guardarLista());
+		btnNewButton_1.addActionListener(e -> cargarLista()); // btnNewButton_1 es el botón "Cargar lista"
+		
+		
 		
 		JTableHeader headerL = tableLista.getTableHeader();
 		headerL.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Fuente más grande y en negrita
@@ -685,4 +710,65 @@ public class VentanaDocentes extends JFrame {
             JOptionPane.showMessageDialog(this, "Error al cargar estudiantes: " + e.getMessage());
         }
     }
+	
+	private void guardarLista() {
+	    String fechaStr = FechaField.getText().trim();
+	    if (fechaStr.isEmpty()) {
+	        JOptionPane.showMessageDialog(this, "Por favor, ingrese una fecha.");
+	        return;
+	    }
+	    try {
+	        Date fechaClase = Date.valueOf(fechaStr);
+	        DefaultTableModel model = (DefaultTableModel) tableLista.getModel();
+	        try (Connection conn = Conexion.conectar()) {
+	            AsistenciaDAO asistenciaDAO = new AsistenciaDAO(conn);
+	            for (int i = 0; i < model.getRowCount(); i++) {
+	                Usuario estudiante = estudiantesDelCurso.get(i);
+	                String estado = (String) model.getValueAt(i, 1);
+	                Asistencia asistencia = new Asistencia();
+	                asistencia.setUsuarioId(estudiante.getUsuarioId());
+	                asistencia.setCursoId(Curso.getId());
+	                asistencia.setFechaClase(fechaClase);
+	                asistencia.setEstadoAsistencia(estado);
+	                asistenciaDAO.guardarAsistencia(asistencia);
+	            }
+	        }
+	        JOptionPane.showMessageDialog(this, "Lista guardada correctamente.");
+	    } catch (IllegalArgumentException ex) {
+	        JOptionPane.showMessageDialog(this, "Formato de fecha inválido. Use yyyy-MM-dd.");
+	    } catch (SQLException ex) {
+	        JOptionPane.showMessageDialog(this, "Error al guardar la lista: " + ex.getMessage());
+	    }
+	}
+
+	private void cargarLista() {
+	    String fechaStr = FechaField.getText().trim();
+	    if (fechaStr.isEmpty()) {
+	        JOptionPane.showMessageDialog(this, "Por favor, ingrese una fecha.");
+	        return;
+	    }
+	    try {
+	        Date fechaClase = Date.valueOf(fechaStr);
+	        try (Connection conn = Conexion.conectar()) {
+	            AsistenciaDAO asistenciaDAO = new AsistenciaDAO(conn);
+	            List<Asistencia> asistencias = asistenciaDAO.obtenerAsistenciaPorCursoYFecha(Curso.getId(), fechaClase);
+	            DefaultTableModel model = (DefaultTableModel) tableLista.getModel();
+	            for (int i = 0; i < model.getRowCount(); i++) {
+	                Usuario estudiante = estudiantesDelCurso.get(i);
+	                String estado = null;
+	                for (Asistencia a : asistencias) {
+	                    if (a.getUsuarioId() == estudiante.getUsuarioId()) {
+	                        estado = a.getEstadoAsistencia();
+	                        break;
+	                    }
+	                }
+	                model.setValueAt(estado, i, 1);
+	            }
+	        }
+	    } catch (IllegalArgumentException ex) {
+	        JOptionPane.showMessageDialog(this, "Formato de fecha inválido. Use yyyy-MM-dd.");
+	    } catch (SQLException ex) {
+	        JOptionPane.showMessageDialog(this, "Error al cargar la lista: " + ex.getMessage());
+	    }
+	}
 }

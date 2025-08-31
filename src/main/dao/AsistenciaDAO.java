@@ -16,7 +16,10 @@ public class AsistenciaDAO {
     // Guardar asistencia (insertar una fila por estudiante)
     public void guardarAsistencia(Asistencia asistencia) throws SQLException {
         String sql = "INSERT INTO asistencia (usuario_id, curso_id, fecha_clase, estado_asistencia) " +
-                     "VALUES (?, ?, ?, ?)";
+                     "VALUES (?, ?, ?, ?) " +
+                     "ON CONFLICT (usuario_id, curso_id, fecha_clase) " +
+                     "DO UPDATE SET estado_asistencia = EXCLUDED.estado_asistencia";
+        
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, asistencia.getUsuarioId());
             ps.setInt(2, asistencia.getCursoId());
