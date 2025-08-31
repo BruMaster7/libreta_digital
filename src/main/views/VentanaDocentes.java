@@ -23,6 +23,8 @@ import main.dao.UsuarioDAO;
 import main.model.CalificacionDetalle;
 import main.model.Curso;
 import main.model.Usuario;
+import main.views.personalized.AsistenciaEditor;
+import main.views.personalized.AsistenciaRenderer;
 
 import javax.swing.JButton;
 import javax.swing.ScrollPaneConstants;
@@ -412,28 +414,23 @@ public class VentanaDocentes extends JFrame {
 		JScrollPane scrollPane_1 = new JScrollPane();
 		panelPasarLista.add(scrollPane_1, BorderLayout.CENTER);
 		
-		
+		// PESTAÑA DE PASAR LISTA //
 		tableLista = new JTable();
 		tableLista.setRowHeight(24);
 		tableLista.setBackground(new Color(219, 183, 255));
 		tableLista.setFont(new Font("Arial", Font.BOLD, 14));
-		tableLista.setModel(new DefaultTableModel(
-			new Object[][] {
-				{null, null},
-				{null, null},
-				{null, null},
-				{null, null},
-				{null, null},
-				{null, null},
-				{null, null},
-				{null, null},
-				{null, null},
-				{null, null},
-			},
-			new String[] {
-				"Esudiante", "Condici\u00F3n"
-			}
-		));
+		DefaultTableModel modelo = new DefaultTableModel(
+			    new Object[][] {},
+			    new String[] { "Estudiante", "Condición" }
+			);
+		tableLista.setModel(modelo);
+		tableLista.getColumnModel().getColumn(1).setCellRenderer(new AsistenciaRenderer());
+		tableLista.getColumnModel().getColumn(1).setCellEditor(new AsistenciaEditor());
+		List<Usuario> estudiantes = usuarioCursoDAO.obtenerEstudiantesActivosPorCurso(Curso.getId());
+		for (Usuario est : estudiantes) {
+		    modelo.addRow(new Object[] { est.getNombre() + " " + est.getApellido(), null });
+		}
+		
 		JTableHeader headerL = tableLista.getTableHeader();
 		headerL.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Fuente más grande y en negrita
 		headerL.setBackground(new Color(230, 230, 250)); // Color lavanda suave
