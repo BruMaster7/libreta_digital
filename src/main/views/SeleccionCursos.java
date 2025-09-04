@@ -97,7 +97,7 @@ public class SeleccionCursos extends JFrame {
         listCursos.setBackground(new Color(230, 204, 255));
         listCursos.setForeground(new Color(128, 0, 255));
         listCursos.setFont(new Font("Arial", Font.BOLD, 18));
-        listCursos.setBounds(414, 225, 300, 267);
+        listCursos.setBounds(337, 220, 300, 267);
         contentPane.add(listCursos);
         
         JButton btnIngresarCurso = new JButton("Ingresar al curso");

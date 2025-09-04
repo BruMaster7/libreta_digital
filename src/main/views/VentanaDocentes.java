@@ -59,19 +59,20 @@ import java.awt.Toolkit;
 import javax.swing.ImageIcon;
 import javax.swing.border.SoftBevelBorder;
 import javax.swing.border.BevelBorder;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerDateModel;
+import java.util.Calendar;
+import com.toedter.calendar.JDateChooser;
 
 public class VentanaDocentes extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTable tableEstudiantes;
-	private JTextField textPlanif;
+	private JTextField textPlanifAnual;
 	private JTable table;
-	private JTextField textLinkEvaluacion;
-	private JTextField textField_1;
 	private JTable tableLista;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
-	private JTextField txtFechaDesarrollo;
 	private JTextField textLinkPlanif;
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
 	private final ButtonGroup buttonGroup_2 = new ButtonGroup();
@@ -80,9 +81,12 @@ public class VentanaDocentes extends JFrame {
 	private static Curso Curso;
     private UsuarioCursoDAO usuarioCursoDAO;
     private CalificacionDAO calificacionDAO;
-    private JTextField FechaField;
     private List<Usuario> estudiantesDelCurso;
-    
+    private JDateChooser dChooserFechaCargada;
+    private JDateChooser dChooserFechaGuardada;
+    private JTextField textField;
+    private JTable tableEvaluar;
+    private JTextField txtReplanifAnual;
 	// Clase interna para el resumen del estudiante en el curso
     public class ResumenEstudianteCurso {
         private String documento;
@@ -238,30 +242,213 @@ public class VentanaDocentes extends JFrame {
 		panelBtnEstudiantes.setLayout(null);
 		
 		JButton btnAgregarNota_1 = new JButton("Agregar nota");
-		btnAgregarNota_1.setBounds(220, 5, 123, 25);
+		btnAgregarNota_1.setBounds(183, 5, 165, 25);
 		btnAgregarNota_1.setForeground(Color.WHITE);
 		btnAgregarNota_1.setFont(new Font("Arial", Font.BOLD, 14));
 		btnAgregarNota_1.setBackground(new Color(128, 0, 255));
 		panelBtnEstudiantes.add(btnAgregarNota_1);
 		
 		JButton btnEditarNota_1 = new JButton("Editar nota\r\n");
-		btnEditarNota_1.setBounds(353, 5, 109, 25);
+		btnEditarNota_1.setBounds(388, 5, 165, 25);
 		btnEditarNota_1.setForeground(Color.WHITE);
 		btnEditarNota_1.setFont(new Font("Arial", Font.BOLD, 14));
 		btnEditarNota_1.setBackground(new Color(128, 0, 255));
 		panelBtnEstudiantes.add(btnEditarNota_1);
 		
 		JButton btnCerrarPromedios_1 = new JButton("Cerrar Promedios");
-		btnCerrarPromedios_1.setBounds(472, 5, 157, 25);
+		btnCerrarPromedios_1.setBounds(595, 5, 165, 25);
 		btnCerrarPromedios_1.setForeground(Color.WHITE);
 		btnCerrarPromedios_1.setFont(new Font("Arial", Font.BOLD, 14));
 		btnCerrarPromedios_1.setBackground(new Color(128, 0, 255));
 		panelBtnEstudiantes.add(btnCerrarPromedios_1);
 		
-		JLabel lblNewLabel_1 = new JLabel("PERDON BRU NO SE COMO PONER LOS BOTONES EN LA GRILLA");
-		lblNewLabel_1.setFont(new Font("Tahoma", Font.PLAIN, 10));
-		lblNewLabel_1.setBounds(639, 9, 354, 19);
-		panelBtnEstudiantes.add(lblNewLabel_1);
+		JPanel tabEvaluacion = new JPanel();
+		tabbedPane.addTab("Evaluación", null, tabEvaluacion, null);
+		tabEvaluacion.setLayout(null);
+		
+		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane_1.setForeground(new Color(255, 255, 255));
+		tabbedPane_1.setBackground(new Color(138, 43, 226));
+		tabbedPane_1.setFont(new Font("Segoe UI", Font.BOLD, 12));
+		tabbedPane_1.setBounds(0, 0, 993, 555);
+		tabEvaluacion.add(tabbedPane_1);
+		
+		JPanel panelEvaluaciones = new JPanel();
+		panelEvaluaciones.setForeground(new Color(255, 255, 255));
+		tabbedPane_1.addTab("Evaluaciones", null, panelEvaluaciones, null);
+		panelEvaluaciones.setLayout(null);
+		
+		JLabel lblIconoEval = new JLabel("");
+		lblIconoEval.setBounds(173, 13, 102, 110);
+		lblIconoEval.setIcon(new ImageIcon(VentanaDocentes.class.getResource("/resources/ExamenIcon.png")));
+		panelEvaluaciones.add(lblIconoEval);
+		
+		JLabel lblEvaluacion = new JLabel("Evaluación");
+		lblEvaluacion.setForeground(new Color(128, 0, 255));
+		lblEvaluacion.setFont(new Font("Arial", Font.BOLD, 24));
+		lblEvaluacion.setBounds(47, 52, 146, 29);
+		panelEvaluaciones.add(lblEvaluacion);
+		
+		JLabel lblFecha = new JLabel("Fecha:");
+		lblFecha.setFont(new Font("Arial", Font.BOLD, 14));
+		lblFecha.setBounds(78, 162, 47, 14);
+		panelEvaluaciones.add(lblFecha);
+		
+		JDateChooser dChooserEvaluacion = new JDateChooser();
+		dChooserEvaluacion.setBackground(new Color(216, 191, 216));
+		dChooserEvaluacion.setBounds(135, 162, 140, 20);
+		panelEvaluaciones.add(dChooserEvaluacion);
+		
+		JComboBox comboBox_1 = new JComboBox();
+		comboBox_1.setModel(new DefaultComboBoxModel(new String[] {"Actividad", "Oral", "Primer parcial", "Segundo parcial"}));
+		comboBox_1.setBackground(new Color(216, 191, 216));
+		comboBox_1.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+		comboBox_1.setBounds(137, 228, 138, 22);
+		panelEvaluaciones.add(comboBox_1);
+		
+		JLabel lblTipoEv_1 = new JLabel("Tipo:");
+		lblTipoEv_1.setFont(new Font("Arial", Font.BOLD, 14));
+		lblTipoEv_1.setBounds(91, 232, 34, 14);
+		panelEvaluaciones.add(lblTipoEv_1);
+		
+		JLabel lblDocumentoPlanif = new JLabel("Link (opcional):");
+		lblDocumentoPlanif.setFont(new Font("Arial", Font.BOLD, 14));
+		lblDocumentoPlanif.setBounds(14, 324, 111, 14);
+		panelEvaluaciones.add(lblDocumentoPlanif);
+		
+		textField = new JTextField();
+		textField.setBackground(new Color(216, 191, 216));
+		textField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+		textField.setColumns(10);
+		textField.setBounds(131, 318, 222, 24);
+		panelEvaluaciones.add(textField);
+		
+		JLabel lblContenidoEvaluacion_1 = new JLabel("Contenido");
+		lblContenidoEvaluacion_1.setFont(new Font("Arial", Font.BOLD, 14));
+		lblContenidoEvaluacion_1.setBounds(639, 89, 77, 14);
+		panelEvaluaciones.add(lblContenidoEvaluacion_1);
+		
+		JTextArea txtrIngreseLosContenidos_1 = new JTextArea();
+		txtrIngreseLosContenidos_1.setText("Ingrese los contenidos \r\nabordados en la evaluación...");
+		txtrIngreseLosContenidos_1.setForeground(new Color(0, 0, 0));
+		txtrIngreseLosContenidos_1.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+		txtrIngreseLosContenidos_1.setBackground(new Color(216, 191, 216));
+		txtrIngreseLosContenidos_1.setBounds(452, 114, 468, 224);
+		panelEvaluaciones.add(txtrIngreseLosContenidos_1);
+		
+		JButton btnGuardarEvaluacion = new JButton("Guardar Evaluación");
+		btnGuardarEvaluacion.setForeground(Color.WHITE);
+		btnGuardarEvaluacion.setFont(new Font("Arial", Font.BOLD, 14));
+		btnGuardarEvaluacion.setBackground(new Color(128, 0, 255));
+		btnGuardarEvaluacion.setBounds(337, 421, 185, 57);
+		panelEvaluaciones.add(btnGuardarEvaluacion);
+		
+		JPanel panelEvaluar = new JPanel();
+		panelEvaluar.setForeground(new Color(255, 255, 255));
+		tabbedPane_1.addTab("Evaluar", null, panelEvaluar, null);
+		panelEvaluar.setLayout(null);
+		
+		JList listEvaluaciones = new JList();
+		listEvaluaciones.setBackground(new Color(216, 191, 216));
+		listEvaluaciones.setFont(new Font("Segoe UI", Font.BOLD, 14));
+		listEvaluaciones.setModel(new AbstractListModel() {
+			String[] values = new String[] {"Ejemplo", "Actividad Diagramas de flujo", "Actividad python", "Mer de restaurante"};
+			public int getSize() {
+				return values.length;
+			}
+			public Object getElementAt(int index) {
+				return values[index];
+			}
+		});
+		listEvaluaciones.setBounds(30, 62, 231, 279);
+		panelEvaluar.add(listEvaluaciones);
+		
+		JLabel lblNewLabel_4 = new JLabel("Actividades creadas");
+		lblNewLabel_4.setForeground(new Color(128, 0, 255));
+		lblNewLabel_4.setFont(new Font("Segoe UI", Font.BOLD, 18));
+		lblNewLabel_4.setBounds(54, 26, 176, 25);
+		panelEvaluar.add(lblNewLabel_4);
+		
+		JScrollPane scrollPaneEstudiantes_1 = new JScrollPane();
+		scrollPaneEstudiantes_1.setBounds(390, 28, 537, 416);
+		panelEvaluar.add(scrollPaneEstudiantes_1);
+		
+		tableEvaluar = new JTable();
+		tableEvaluar.setRowHeight(32);
+		tableEvaluar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+		tableEvaluar.setBackground(new Color(216, 191, 216));
+		tableEvaluar.setModel(new DefaultTableModel(
+			new Object[][] {
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+				{null, null},
+			},
+			new String[] {
+				"Estudiante", "Nota"
+			}
+		));
+		tableEvaluar.getColumnModel().getColumn(1).setMaxWidth(220);
+		scrollPaneEstudiantes_1.setViewportView(tableEvaluar);
+		
+		JButton btnCargarEvaluacion = new JButton("Cargar ");
+		btnCargarEvaluacion.setBackground(new Color(128, 0, 255));
+		btnCargarEvaluacion.setForeground(new Color(255, 255, 255));
+		btnCargarEvaluacion.setFont(new Font("Segoe UI", Font.BOLD, 13));
+		btnCargarEvaluacion.setBounds(30, 475, 111, 39);
+		panelEvaluar.add(btnCargarEvaluacion);
+		
+		JButton btnGuardarEvaluacionNota = new JButton("Guardar");
+		btnGuardarEvaluacionNota.setForeground(new Color(255, 255, 255));
+		btnGuardarEvaluacionNota.setBackground(new Color(128, 0, 255));
+		btnGuardarEvaluacionNota.setFont(new Font("Segoe UI", Font.BOLD, 13));
+		btnGuardarEvaluacionNota.setBounds(600, 462, 120, 39);
+		panelEvaluar.add(btnGuardarEvaluacionNota);
+		
+		JLabel lblNewLabel_1 = new JLabel("Descripción de la evaluación:");
+		lblNewLabel_1.setForeground(new Color(128, 0, 255));
+		lblNewLabel_1.setFont(new Font("Segoe UI", Font.BOLD, 11));
+		lblNewLabel_1.setBounds(65, 352, 154, 14);
+		panelEvaluar.add(lblNewLabel_1);
+		
+		JTextArea textArea = new JTextArea();
+		textArea.setBackground(new Color(211, 211, 211));
+		textArea.setEditable(false);
+		textArea.setBounds(42, 367, 204, 97);
+		panelEvaluar.add(textArea);
+		
+		JButton btnEliminarEvaluacion = new JButton("Eliminar");
+		btnEliminarEvaluacion.setForeground(Color.WHITE);
+		btnEliminarEvaluacion.setFont(new Font("Segoe UI", Font.BOLD, 13));
+		btnEliminarEvaluacion.setBackground(new Color(169, 169, 169));
+		btnEliminarEvaluacion.setBounds(150, 475, 111, 39);
+		panelEvaluar.add(btnEliminarEvaluacion);
 		
 		JPanel tabPlanificaciones = new JPanel();
 		tabbedPane.addTab("Planificaciones", null, tabPlanificaciones, null);
@@ -272,115 +459,65 @@ public class VentanaDocentes extends JFrame {
 		tabPlanificaciones.add(panelPlanificaciones);
 		panelPlanificaciones.setLayout(null);
 		
-		JLabel lblSubirPlanif = new JLabel("Subir planificación anual (Link público de drive):");
+		JLabel lblSubirPlanif = new JLabel("Subir planificación anual (Link público de drive)");
 		lblSubirPlanif.setFont(new Font("Arial", Font.BOLD, 14));
-		lblSubirPlanif.setBounds(20, 119, 347, 24);
+		lblSubirPlanif.setBounds(301, 159, 347, 24);
 		panelPlanificaciones.add(lblSubirPlanif);
 		
-		textPlanif = new JTextField();
-		textPlanif.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-		textPlanif.setBounds(417, 117, 477, 29);
-		panelPlanificaciones.add(textPlanif);
-		textPlanif.setColumns(10);
+		textPlanifAnual = new JTextField();
+		textPlanifAnual.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+		textPlanifAnual.setBounds(229, 190, 477, 29);
+		panelPlanificaciones.add(textPlanifAnual);
+		textPlanifAnual.setColumns(10);
 		
 		JButton btnGuardarPlanif = new JButton("Guardar Planificación");
+		btnGuardarPlanif.setFont(new Font("Segoe UI", Font.BOLD, 13));
 		btnGuardarPlanif.setForeground(new Color(255, 255, 255));
 		btnGuardarPlanif.setBackground(new Color(128, 0, 255));
-		btnGuardarPlanif.setBounds(590, 157, 173, 57);
+		btnGuardarPlanif.setBounds(376, 243, 185, 50);
 		panelPlanificaciones.add(btnGuardarPlanif);
-		
-		JSeparator separatorPlanif = new JSeparator();
-		separatorPlanif.setForeground(new Color(255, 0, 255));
-		separatorPlanif.setBackground(new Color(128, 0, 255));
-		separatorPlanif.setToolTipText("Evaluaciones");
-		separatorPlanif.setBounds(20, 218, 973, 35);
-		panelPlanificaciones.add(separatorPlanif);
-		
-		JFormattedTextField textFecha = new JFormattedTextField();
-		textFecha.setFont(new Font("Arial", Font.BOLD, 14));
-		textFecha.setBounds(238, 324, 111, 20);
-		panelPlanificaciones.add(textFecha);
 		
 		table = new JTable();
 		table.setBounds(313, 328, 1, 1);
 		panelPlanificaciones.add(table);
 		
-		JLabel lblFecha = new JLabel("Fecha:");
-		lblFecha.setFont(new Font("Arial", Font.BOLD, 14));
-		lblFecha.setBounds(162, 327, 54, 14);
-		panelPlanificaciones.add(lblFecha);
-		
-		JLabel lblContenidoEvaluacion = new JLabel("Contenido:");
-		lblContenidoEvaluacion.setFont(new Font("Arial", Font.BOLD, 14));
-		lblContenidoEvaluacion.setBounds(139, 388, 77, 14);
-		panelPlanificaciones.add(lblContenidoEvaluacion);
-		
-		JTextArea txtrIngreseLosContenidos = new JTextArea();
-		txtrIngreseLosContenidos.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-		txtrIngreseLosContenidos.setBackground(new Color(255, 255, 255));
-		txtrIngreseLosContenidos.setForeground(new Color(128, 128, 255));
-	
-		txtrIngreseLosContenidos.addFocusListener(new FocusAdapter() {
-			@Override
-			public void focusGained(FocusEvent e) {
-				if (txtrIngreseLosContenidos.getText().equals("Ingrese los contenidos \\r\\n abordados en la evaluación...")) {
-					txtrIngreseLosContenidos.setText("");
-				}
-			}
-			@Override
-			public void focusLost(FocusEvent e) {
-				if (txtrIngreseLosContenidos.getText().trim().isEmpty()) {
-					txtrIngreseLosContenidos.setText("Ingrese los contenidos \r\nabordados en la evaluación...");
-					txtrIngreseLosContenidos.setForeground(new Color(128, 128, 255));
-				}
-			}
-			
-		});
-		
-		
-		txtrIngreseLosContenidos.setText("Ingrese los contenidos \r\nabordados en la evaluación...");
-		txtrIngreseLosContenidos.setBounds(238, 384, 222, 88);
-		panelPlanificaciones.add(txtrIngreseLosContenidos);
-		
-		JLabel lblEvaluacion = new JLabel("Evaluación");
-		lblEvaluacion.setForeground(new Color(128, 0, 255));
-		lblEvaluacion.setFont(new Font("Arial", Font.BOLD, 24));
-		lblEvaluacion.setBounds(73, 245, 146, 29);
-		panelPlanificaciones.add(lblEvaluacion);
-		
 		JLabel lblPlanificaciones = new JLabel("Planificaciones");
 		lblPlanificaciones.setForeground(new Color(128, 0, 255));
 		lblPlanificaciones.setFont(new Font("Arial", Font.BOLD, 24));
-		lblPlanificaciones.setBounds(39, 35, 185, 24);
+		lblPlanificaciones.setBounds(389, 12, 185, 24);
 		panelPlanificaciones.add(lblPlanificaciones);
-		
-		JLabel lblDocumentoPlanif = new JLabel("Link a documento (opcional):");
-		lblDocumentoPlanif.setFont(new Font("Arial", Font.BOLD, 14));
-		lblDocumentoPlanif.setBounds(20, 505, 208, 14);
-		panelPlanificaciones.add(lblDocumentoPlanif);
-		
-		textLinkEvaluacion = new JTextField();
-		textLinkEvaluacion.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-		textLinkEvaluacion.setBounds(238, 501, 262, 24);
-		panelPlanificaciones.add(textLinkEvaluacion);
-		textLinkEvaluacion.setColumns(10);
-		
-		JButton btnGuardarEvaluacion = new JButton("Guardar Evaluación");
-		btnGuardarEvaluacion.setForeground(new Color(255, 255, 255));
-		btnGuardarEvaluacion.setFont(new Font("Arial", Font.BOLD, 14));
-		btnGuardarEvaluacion.setBackground(new Color(128, 0, 255));
-		btnGuardarEvaluacion.setBounds(578, 484, 185, 57);
-		panelPlanificaciones.add(btnGuardarEvaluacion);
-		
-		JLabel lblIconoEval = new JLabel("New label");
-		lblIconoEval.setIcon(new ImageIcon(VentanaDocentes.class.getResource("/resources/ExamenIcon.png")));
-		lblIconoEval.setBounds(206, 226, 111, 75);
-		panelPlanificaciones.add(lblIconoEval);
 		
 		JLabel lblIconoPlano = new JLabel("");
 		lblIconoPlano.setIcon(new ImageIcon(VentanaDocentes.class.getResource("/resources/Plano.png")));
-		lblIconoPlano.setBounds(234, -15, 156, 123);
+		lblIconoPlano.setBounds(425, 27, 156, 123);
 		panelPlanificaciones.add(lblIconoPlano);
+		
+		JLabel lblSubirPlanif_1 = new JLabel("Subir replanificación anual (Link público de drive)");
+		lblSubirPlanif_1.setFont(new Font("Arial", Font.BOLD, 14));
+		lblSubirPlanif_1.setBounds(292, 374, 356, 24);
+		panelPlanificaciones.add(lblSubirPlanif_1);
+		
+		JSeparator separator = new JSeparator();
+		separator.setBounds(841, 335, -807, -10);
+		panelPlanificaciones.add(separator);
+		
+		JSeparator separator_2 = new JSeparator();
+		separator_2.setForeground(new Color(128, 0, 255));
+		separator_2.setBounds(-160, 327, 1151, 13);
+		panelPlanificaciones.add(separator_2);
+		
+		txtReplanifAnual = new JTextField();
+		txtReplanifAnual.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+		txtReplanifAnual.setColumns(10);
+		txtReplanifAnual.setBounds(229, 409, 477, 29);
+		panelPlanificaciones.add(txtReplanifAnual);
+		
+		JButton btnGuardarReplanif = new JButton("Guardar Planificación");
+		btnGuardarReplanif.setFont(new Font("Segoe UI", Font.BOLD, 13));
+		btnGuardarReplanif.setForeground(Color.WHITE);
+		btnGuardarReplanif.setBackground(new Color(128, 0, 255));
+		btnGuardarReplanif.setBounds(376, 463, 185, 50);
+		panelPlanificaciones.add(btnGuardarReplanif);
 		
 		JPanel tabPasarLista = new JPanel();
 		tabbedPane.addTab("Pasar Lista", null, tabPasarLista, null);
@@ -398,16 +535,32 @@ public class VentanaDocentes extends JFrame {
 		lblFechaClase.setFont(new Font("Arial", Font.BOLD, 14));
 		panelSupPasarLista.add(lblFechaClase);
 		
-		textField_1 = new JTextField();
-		textField_1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		panelSupPasarLista.add(textField_1);
-		textField_1.setColumns(10);
+		dChooserFechaCargada = new JDateChooser();
+		BorderLayout borderLayout = (BorderLayout) dChooserFechaCargada.getLayout();
+		borderLayout.setHgap(20);
+		panelSupPasarLista.add(dChooserFechaCargada);
 		
 		JButton btnNewButton_1 = new JButton("Cargar lista\r\n");
 		btnNewButton_1.setFont(new Font("Arial", Font.BOLD, 14));
 		btnNewButton_1.setForeground(new Color(255, 255, 255));
 		btnNewButton_1.setBackground(new Color(128, 0, 255));
 		panelSupPasarLista.add(btnNewButton_1);
+		
+		JPanel panel = new JPanel();
+		panel.setBackground(new Color(0, 255, 0));
+		panelSupPasarLista.add(panel);
+		
+		JLabel lblNewLabel_2 = new JLabel("Presente");
+		lblNewLabel_2.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+		panelSupPasarLista.add(lblNewLabel_2);
+		
+		JPanel panel_1 = new JPanel();
+		panel_1.setBackground(new Color(255, 0, 0));
+		panelSupPasarLista.add(panel_1);
+		
+		JLabel lblNewLabel_3 = new JLabel("No presente");
+		lblNewLabel_3.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		panelSupPasarLista.add(lblNewLabel_3);
 		
 		JPanel panelInfPasarLista = new JPanel();
 		panelPasarLista.add(panelInfPasarLista, BorderLayout.SOUTH);
@@ -416,10 +569,8 @@ public class VentanaDocentes extends JFrame {
 		FechaLista.setFont(new Font("Arial", Font.BOLD, 14));
 		panelInfPasarLista.add(FechaLista);
 		
-		FechaField = new JTextField();
-		FechaField.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		FechaField.setColumns(10);
-		panelInfPasarLista.add(FechaField);
+		dChooserFechaGuardada = new JDateChooser();
+		panelInfPasarLista.add(dChooserFechaGuardada);
 		
 		JButton btnGuardarLista = new JButton("Guardar lista");
 		btnGuardarLista.setForeground(new Color(255, 255, 255));
@@ -596,14 +747,8 @@ public class VentanaDocentes extends JFrame {
 		
 		JLabel lblFechaDesarrollo = new JLabel("Fecha:");
 		lblFechaDesarrollo.setFont(new Font("Arial", Font.BOLD, 14));
-		lblFechaDesarrollo.setBounds(68, 143, 47, 14);
+		lblFechaDesarrollo.setBounds(68, 134, 47, 14);
 		panelDesarrollo.add(lblFechaDesarrollo);
-		
-		txtFechaDesarrollo = new JTextField();
-		txtFechaDesarrollo.setText("(Aca iria un date chooser)");
-		txtFechaDesarrollo.setBounds(125, 141, 149, 20);
-		panelDesarrollo.add(txtFechaDesarrollo);
-		txtFechaDesarrollo.setColumns(10);
 		
 		JLabel lblDesDesarrollo = new JLabel("Desarrollo:");
 		lblDesDesarrollo.setFont(new Font("Arial", Font.BOLD, 14));
@@ -611,8 +756,9 @@ public class VentanaDocentes extends JFrame {
 		panelDesarrollo.add(lblDesDesarrollo);
 		
 		JTextArea textDesarrollo = new JTextArea();
+		textDesarrollo.setBackground(new Color(216, 191, 216));
 		textDesarrollo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-		textDesarrollo.setBounds(125, 182, 366, 143);
+		textDesarrollo.setBounds(125, 182, 450, 163);
 		panelDesarrollo.add(textDesarrollo);
 		
 		JLabel lblLinkPlanif = new JLabel("Link a planificación (Opcional):");
@@ -621,23 +767,24 @@ public class VentanaDocentes extends JFrame {
 		panelDesarrollo.add(lblLinkPlanif);
 		
 		textLinkPlanif = new JTextField();
+		textLinkPlanif.setBackground(new Color(216, 191, 216));
 		textLinkPlanif.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 		textLinkPlanif.setBounds(255, 381, 218, 20);
 		panelDesarrollo.add(textLinkPlanif);
 		textLinkPlanif.setColumns(10);
 		
-		JButton btnVerHistorial = new JButton("Ver historial");
+		JButton btnVerHistorial = new JButton("Ver contenido");
 		btnVerHistorial.setFont(new Font("Arial", Font.BOLD, 14));
 		btnVerHistorial.setForeground(new Color(255, 255, 255));
 		btnVerHistorial.setBackground(new Color(128, 0, 255));
-		btnVerHistorial.setBounds(756, 132, 141, 37);
+		btnVerHistorial.setBounds(773, 449, 141, 37);
 		panelDesarrollo.add(btnVerHistorial);
 		
 		JButton btnGuardarDesarrollo = new JButton("Guardar Desarrollo");
 		btnGuardarDesarrollo.setForeground(new Color(255, 255, 255));
-		btnGuardarDesarrollo.setBackground(new Color(128, 0, 255));
+		btnGuardarDesarrollo.setBackground(new Color(0, 64, 0));
 		btnGuardarDesarrollo.setFont(new Font("Arial", Font.BOLD, 14));
-		btnGuardarDesarrollo.setBounds(208, 449, 187, 37);
+		btnGuardarDesarrollo.setBounds(255, 449, 187, 37);
 		panelDesarrollo.add(btnGuardarDesarrollo);
 		
 		JList listDesarrollos = new JList();
@@ -656,8 +803,20 @@ public class VentanaDocentes extends JFrame {
 		listDesarrollos.setFont(new Font("Arial", Font.BOLD, 18));
 		listDesarrollos.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, new Color(128, 0, 255), new Color(128, 0, 255), new Color(128, 0, 255), new Color(128, 0, 255)));
 		listDesarrollos.setBackground(new Color(230, 204, 255));
-		listDesarrollos.setBounds(756, 186, 141, 267);
+		listDesarrollos.setBounds(773, 125, 141, 304);
 		panelDesarrollo.add(listDesarrollos);
+		
+		JButton btnEliminar = new JButton("Eliminar");
+		btnEliminar.setForeground(Color.WHITE);
+		btnEliminar.setFont(new Font("Arial", Font.BOLD, 14));
+		btnEliminar.setBackground(new Color(64, 0, 0));
+		btnEliminar.setBounds(452, 449, 187, 37);
+		panelDesarrollo.add(btnEliminar);
+		
+		JDateChooser dChooserDesarrollo = new JDateChooser();
+		dChooserDesarrollo.setBackground(new Color(216, 191, 216));
+		dChooserDesarrollo.setBounds(125, 130, 162, 27);
+		panelDesarrollo.add(dChooserDesarrollo);
 	}
 	
 	private void cargarEstudiantes() {
@@ -712,61 +871,70 @@ public class VentanaDocentes extends JFrame {
     }
 	
 	private void guardarLista() {
-	    String fechaStr = FechaField.getText().trim();
-	    if (fechaStr.isEmpty()) {
-	        JOptionPane.showMessageDialog(this, "Por favor, ingrese una fecha.");
+	    // Obtenemos la fecha seleccionada en el JDateChooser
+	    java.util.Date fechaSeleccionada = dChooserFechaGuardada.getDate();
+
+	    if (fechaSeleccionada == null) {
+	        JOptionPane.showMessageDialog(this, "Por favor, seleccione una fecha.");
 	        return;
 	    }
+
+	    // Convertimos java.util.Date -> java.sql.Date
+	    java.sql.Date fechaClase = new java.sql.Date(fechaSeleccionada.getTime());
+
 	    try {
-	        Date fechaClase = Date.valueOf(fechaStr);
 	        DefaultTableModel model = (DefaultTableModel) tableLista.getModel();
 	        try (Connection conn = Conexion.conectar()) {
 	            AsistenciaDAO asistenciaDAO = new AsistenciaDAO(conn);
+
 	            for (int i = 0; i < model.getRowCount(); i++) {
 	                Usuario estudiante = estudiantesDelCurso.get(i);
 	                String estado = (String) model.getValueAt(i, 1);
+
 	                Asistencia asistencia = new Asistencia();
 	                asistencia.setUsuarioId(estudiante.getUsuarioId());
 	                asistencia.setCursoId(Curso.getId());
 	                asistencia.setFechaClase(fechaClase);
 	                asistencia.setEstadoAsistencia(estado);
+
 	                asistenciaDAO.guardarAsistencia(asistencia);
 	            }
 	        }
 	        JOptionPane.showMessageDialog(this, "Lista guardada correctamente.");
-	    } catch (IllegalArgumentException ex) {
-	        JOptionPane.showMessageDialog(this, "Formato de fecha inválido. Use yyyy-MM-dd.");
 	    } catch (SQLException ex) {
 	        JOptionPane.showMessageDialog(this, "Error al guardar la lista: " + ex.getMessage());
 	    }
 	}
 
 	private void cargarLista() {
-	    String fechaStr = FechaField.getText().trim();
-	    if (fechaStr.isEmpty()) {
-	        JOptionPane.showMessageDialog(this, "Por favor, ingrese una fecha.");
+	    // Obtenemos la fecha seleccionada en el JDateChooser
+	    java.util.Date fechaSeleccionada = dChooserFechaCargada.getDate();
+	    if (fechaSeleccionada == null) {
+	        JOptionPane.showMessageDialog(this, "Por favor, seleccione una fecha.");
 	        return;
 	    }
-	    try {
-	        Date fechaClase = Date.valueOf(fechaStr);
-	        try (Connection conn = Conexion.conectar()) {
-	            AsistenciaDAO asistenciaDAO = new AsistenciaDAO(conn);
-	            List<Asistencia> asistencias = asistenciaDAO.obtenerAsistenciaPorCursoYFecha(Curso.getId(), fechaClase);
-	            DefaultTableModel model = (DefaultTableModel) tableLista.getModel();
-	            for (int i = 0; i < model.getRowCount(); i++) {
-	                Usuario estudiante = estudiantesDelCurso.get(i);
-	                String estado = null;
-	                for (Asistencia a : asistencias) {
-	                    if (a.getUsuarioId() == estudiante.getUsuarioId()) {
-	                        estado = a.getEstadoAsistencia();
-	                        break;
-	                    }
+
+	    // Convertimos java.util.Date -> java.sql.Date
+	    java.sql.Date fechaClase = new java.sql.Date(fechaSeleccionada.getTime());
+
+	    try (Connection conn = Conexion.conectar()) {
+	        AsistenciaDAO asistenciaDAO = new AsistenciaDAO(conn);
+	        List<Asistencia> asistencias = asistenciaDAO.obtenerAsistenciaPorCursoYFecha(Curso.getId(), fechaClase);
+
+	        DefaultTableModel model = (DefaultTableModel) tableLista.getModel();
+	        for (int i = 0; i < model.getRowCount(); i++) {
+	            Usuario estudiante = estudiantesDelCurso.get(i);
+	            String estado = null;
+
+	            for (Asistencia a : asistencias) {
+	                if (a.getUsuarioId() == estudiante.getUsuarioId()) {
+	                    estado = a.getEstadoAsistencia();
+	                    break;
 	                }
-	                model.setValueAt(estado, i, 1);
 	            }
+	            model.setValueAt(estado, i, 1);
 	        }
-	    } catch (IllegalArgumentException ex) {
-	        JOptionPane.showMessageDialog(this, "Formato de fecha inválido. Use yyyy-MM-dd.");
+
 	    } catch (SQLException ex) {
 	        JOptionPane.showMessageDialog(this, "Error al cargar la lista: " + ex.getMessage());
 	    }

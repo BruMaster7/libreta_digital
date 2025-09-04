@@ -43,6 +43,8 @@ import java.awt.event.ActionListener;
 import java.sql.Date;
 import java.awt.event.ActionEvent;
 import javax.swing.JPasswordField;
+import com.toedter.calendar.JDateChooser;
+
 
 public class VentanaAdmin extends JFrame {
 	
@@ -68,10 +70,13 @@ public class VentanaAdmin extends JFrame {
     private int rolIdEditar = 0;
     private JPasswordField textPasswordCrearUsuario;
     private JPasswordField textPasswardEditarUsuario;
-    private JTextField textfechaNacimientoCrearusuario;
-    private JTextField textFechaNacimientoEditarusuario;
-
-
+    private JTextField txtVacante;
+    private JTable tableEstudiantesCurso;
+    private JTextField txtCiEstudianteVinculado;
+    private JTextField txtCiDocenteVinculado;
+    private JDateChooser dChooserFechaNacAlta;
+    private JDateChooser dChooserFechaNacEdit;
+    private JTable table;
 	
 
 	/**
@@ -115,6 +120,8 @@ public class VentanaAdmin extends JFrame {
 		JPanel tabGestion = new JPanel();
 		tabbedPane.addTab("Gestión", null, tabGestion, null);
 		tabGestion.setLayout(null);
+		
+	
 		
 		JTabbedPane SubtabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		SubtabbedPane.setBackground(new Color(210, 166, 255));
@@ -189,13 +196,6 @@ public class VentanaAdmin extends JFrame {
 		textPasswordCrearUsuario = new JPasswordField();
 		textPasswordCrearUsuario.setBounds(219, 470, 241, 33);
 		tabCrearusu.add(textPasswordCrearUsuario);
-		
-		textfechaNacimientoCrearusuario = new JTextField();
-		textfechaNacimientoCrearusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-		textfechaNacimientoCrearusuario.setColumns(10);
-		textfechaNacimientoCrearusuario.setBounds(219, 370, 241, 33);
-		tabCrearusu.add(textfechaNacimientoCrearusuario);
-		textfechaNacimientoCrearusuario.setText("yyyy-MM-dd");
 		JLabel lblAvatarCrearusuario = new JLabel("");
 		lblAvatarCrearusuario.setIcon(new ImageIcon(VentanaAdmin.class.getResource("/resources/AvatarVioletAchede.png")));
 		lblAvatarCrearusuario.setBounds(581, 177, 241, 230);
@@ -245,15 +245,14 @@ public class VentanaAdmin extends JFrame {
 		            usuario.setDocumento(textCiCrearusuario.getText().trim());
 		            usuario.setNombre(textNombreCrearusuario.getText().trim());
 		            usuario.setApellido(textApellidoCrearusuario.getText().trim());
-		            String fechaTexto = textfechaNacimientoCrearusuario.getText().trim();
-		            Date fechaSQL;
-		            try{
-		            	fechaSQL = Date.valueOf(fechaTexto); 
-		            } catch (IllegalArgumentException ex) {
-		            	JOptionPane.showMessageDialog(VentanaAdmin.this, "Formato de fecha inválido. Use yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
-		            	return;
+		            java.util.Date fechaNacimiento = dChooserFechaNacAlta.getDate();
+		            if (fechaNacimiento == null) {
+		                JOptionPane.showMessageDialog(VentanaAdmin.this, "Seleccione una fecha de nacimiento.", "Error", JOptionPane.ERROR_MESSAGE);
+		                return;
 		            }
+		            Date fechaSQL = new Date(fechaNacimiento.getTime()); // convierte a java.sql.Date
 		            usuario.setFechaNacimiento(fechaSQL);
+		            
 		            usuario.setEmail(textCorreoCrearusuario.getText().trim());
 		            usuario.setContrasena(textPasswordCrearUsuario.getText().trim());
 		            usuario.setEstado(true); // Por defecto, el usuario se crea activo
@@ -275,7 +274,7 @@ public class VentanaAdmin extends JFrame {
 		                textCiCrearusuario.setText("");
 		                textNombreCrearusuario.setText("");
 		                textApellidoCrearusuario.setText("");
-		                textfechaNacimientoCrearusuario.setText("yyyy-MM-dd");
+		                dChooserFechaNacAlta.setDate(null);
 		                textCorreoCrearusuario.setText("");
 		                textPasswordCrearUsuario.setText("");
 		            } else {
@@ -291,8 +290,12 @@ public class VentanaAdmin extends JFrame {
 		btnAgregar.setForeground(Color.WHITE);
 		btnAgregar.setFont(new Font("Segoe UI", Font.BOLD, 16));
 		btnAgregar.setBackground(new Color(128, 0, 255));
-		btnAgregar.setBounds(597, 439, 104, 33);
+		btnAgregar.setBounds(631, 467, 104, 33);
 		tabCrearusu.add(btnAgregar);
+		
+		dChooserFechaNacAlta = new JDateChooser();
+		dChooserFechaNacAlta.setBounds(219, 372, 241, 31);
+		tabCrearusu.add(dChooserFechaNacAlta);
 		
 		JPanel tabDardebaja = new JPanel();
 		SubtabbedPane.addTab("Dar de baja", null, tabDardebaja, null);
@@ -413,6 +416,58 @@ public class VentanaAdmin extends JFrame {
 		        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		    }
 		});
+		
+		JPanel tabListado = new JPanel();
+		SubtabbedPane.addTab("Listado", null, tabListado, null);
+		tabListado.setLayout(null);
+		
+		JLabel lblListadoDeUsu = new JLabel("Listado de Usuarios");
+		lblListadoDeUsu.setBounds(363, 11, 240, 22);
+		lblListadoDeUsu.setForeground(new Color(128, 0, 255));
+		lblListadoDeUsu.setFont(new Font("Segoe UI", Font.BOLD, 26));
+		tabListado.add(lblListadoDeUsu);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(131, 86, 773, 374);
+		tabListado.add(scrollPane);
+		
+		table = new JTable();
+		table.setBackground(new Color(216, 191, 216));
+		table.setRowHeight(30);
+		table.setFont(new Font("Segoe UI", Font.ITALIC, 16));
+		table.setModel(new DefaultTableModel(
+			new Object[][] {
+				{null, null, null},
+				{null, null, null},
+				{null, null, null},
+				{null, null, null},
+				{null, null, null},
+				{null, null, null},
+				{null, null, null},
+			},
+			new String[] {
+				"Nombre", "Correo", "C.I"
+			}
+		));
+		scrollPane.setViewportView(table);
+		
+		JComboBox cmbFiltro1 = new JComboBox();
+		cmbFiltro1.setModel(new DefaultComboBoxModel(new String[] {"Estudiante", "Docente", "Administrador"}));
+		cmbFiltro1.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+		cmbFiltro1.setBounds(162, 51, 112, 22);
+		tabListado.add(cmbFiltro1);
+		
+		JLabel lblNewLabel_3 = new JLabel("Rol:");
+		lblNewLabel_3.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+		lblNewLabel_3.setBounds(133, 54, 33, 14);
+		tabListado.add(lblNewLabel_3);
+		
+		JButton btnNewButton = new JButton("Listar");
+		btnNewButton.setForeground(new Color(255, 255, 255));
+		btnNewButton.setBackground(new Color(153, 50, 204));
+		btnNewButton.setFont(new Font("Segoe UI", Font.BOLD, 11));
+		btnNewButton.setBounds(284, 51, 71, 22);
+		tabListado.add(btnNewButton);
 
 		
 		JPanel tabEditar = new JPanel();
@@ -465,7 +520,7 @@ public class VentanaAdmin extends JFrame {
 		
 		JLabel lblFechaNac = new JLabel("Fecha Nac:");
         lblFechaNac.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblFechaNac.setBounds(186, 330, 95, 22);
+        lblFechaNac.setBounds(186, 324, 95, 22);
         tabEditar.add(lblFechaNac);
 		
 		JLabel lblPassEditarusuario = new JLabel("Contraseña:");
@@ -486,7 +541,7 @@ public class VentanaAdmin extends JFrame {
 		textCiEditarusuario = new JTextField();
 		textCiEditarusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
 		textCiEditarusuario.setColumns(10);
-		textCiEditarusuario.setBounds(284, 162, 241, 33);
+		textCiEditarusuario.setBounds(284, 161, 241, 33);
 		tabEditar.add(textCiEditarusuario);
 		
 		textNombreEditarusuario = new JTextField();
@@ -495,18 +550,15 @@ public class VentanaAdmin extends JFrame {
 		textNombreEditarusuario.setBounds(284, 220, 241, 33);
 		tabEditar.add(textNombreEditarusuario);
 		
+		dChooserFechaNacEdit = new JDateChooser();
+		dChooserFechaNacEdit.setBounds(284, 321, 241, 31); // ajusta las coordenadas según tu diseño
+		tabEditar.add(dChooserFechaNacEdit);
+		
 		textApellidoEditarusuario = new JTextField();
 		textApellidoEditarusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
 		textApellidoEditarusuario.setColumns(10);
 		textApellidoEditarusuario.setBounds(284, 272, 241, 33);
 		tabEditar.add(textApellidoEditarusuario);
-		
-		textFechaNacimientoEditarusuario = new JTextField();
-        textFechaNacimientoEditarusuario.setText("yyyy-MM-dd");
-        textFechaNacimientoEditarusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        textFechaNacimientoEditarusuario.setColumns(10);
-        textFechaNacimientoEditarusuario.setBounds(284, 326, 241, 33);
-        tabEditar.add(textFechaNacimientoEditarusuario);
         
 		textCorreoEditarusuario = new JTextField();
 		textCorreoEditarusuario.setFont(new Font("Segoe UI", Font.PLAIN, 16));
@@ -545,7 +597,6 @@ public class VentanaAdmin extends JFrame {
 		        	rolIdEditar = usuario.getRolId();
 		            textNombreEditarusuario.setText(usuario.getNombre());
 		            textApellidoEditarusuario.setText(usuario.getApellido());
-		            textFechaNacimientoEditarusuario.setText(usuario.getFechaNacimiento().toString());
 		            textCorreoEditarusuario.setText(usuario.getEmail());
 		            textPasswardEditarUsuario.setText(usuario.getContrasena());
 		            comboEstadoEditarusuario.setSelectedItem(String.valueOf(usuario.getEstado()));
@@ -556,7 +607,6 @@ public class VentanaAdmin extends JFrame {
 		            textCiEditarusuario.setText("");
 		            textNombreEditarusuario.setText("");
 		            textApellidoEditarusuario.setText("");
-		            textFechaNacimientoEditarusuario.setText("yyyy-MM-dd");
 		            textCorreoEditarusuario.setText("");
 		            textPasswardEditarUsuario.setText("");
 		        }
@@ -584,14 +634,13 @@ public class VentanaAdmin extends JFrame {
 		        usuario.setDocumento(textCiEditarusuario.getText().trim());
 		        usuario.setNombre(textNombreEditarusuario.getText().trim());
 		        usuario.setApellido(textApellidoEditarusuario.getText().trim());
-		        Date fechaSQL;
-	            try{
-	            	fechaSQL = Date.valueOf(textFechaNacimientoEditarusuario.getText().trim()); 
-	            } catch (IllegalArgumentException ex) {
-	            	JOptionPane.showMessageDialog(VentanaAdmin.this, "Formato de fecha inválido. Use yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
-	            	return;
-	            }
-	            usuario.setFechaNacimiento(fechaSQL);
+		        java.util.Date fechaNacimiento = dChooserFechaNacEdit.getDate();
+		        if (fechaNacimiento == null) {
+		            JOptionPane.showMessageDialog(VentanaAdmin.this, "Seleccione una fecha de nacimiento.", "Error", JOptionPane.ERROR_MESSAGE);
+		            return;
+		        }
+		        Date fechaSQL = new Date(fechaNacimiento.getTime()); // convierte java.util.Date a java.sql.Date
+		        usuario.setFechaNacimiento(fechaSQL);
 		        
 		        usuario.setContrasena(textPasswardEditarUsuario.getText().trim());
 		        usuario.setEmail(textCorreoEditarusuario.getText().trim());
@@ -607,10 +656,14 @@ public class VentanaAdmin extends JFrame {
 		            textCiEditarusuario.setText("");
 		            textNombreEditarusuario.setText("");
 		            textApellidoEditarusuario.setText("");
-		            textFechaNacimientoEditarusuario.setText("yyyy-MM-dd");
 		            textPasswardEditarUsuario.setText("");
 		            textCorreoEditarusuario.setText("");
+		            dChooserFechaNacEdit.setDate(null); // limpia el selector de fecha
 		            comboEstadoEditarusuario.setSelectedIndex(0);
+		            
+		   
+		            dChooserFechaNacEdit.setBounds(284, 321, 241, 31);
+		            tabEditar.add(dChooserFechaNacEdit);
 		           
 		        } else {
 		            JOptionPane.showMessageDialog(this, "No se pudo actualizar el usuario.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -619,6 +672,138 @@ public class VentanaAdmin extends JFrame {
 		        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 		    }
 		});
+		
+		JPanel tabGestionCursos = new JPanel();
+		tabbedPane.addTab("Cursos", null, tabGestionCursos, null);
+		tabGestionCursos.setLayout(null);
+		
+		JLabel lblGestinDeCursos = new JLabel("Gestión de Cursos");
+		lblGestinDeCursos.setBounds(75, 11, 261, 41);
+		lblGestinDeCursos.setForeground(new Color(128, 0, 255));
+		lblGestinDeCursos.setFont(new Font("Segoe UI", Font.BOLD, 30));
+		tabGestionCursos.add(lblGestinDeCursos);
+		
+		JComboBox cmbCurso = new JComboBox();
+		cmbCurso.setModel(new DefaultComboBoxModel(new String[] {"Informatica", "Biologia", "Derecho", "Quimica", "Fisica", "Historia", "Literatura"}));
+		cmbCurso.setFont(new Font("Segoe UI", Font.BOLD, 12));
+		cmbCurso.setBounds(107, 95, 180, 33);
+		tabGestionCursos.add(cmbCurso);
+		
+		JLabel lblSeleccionDeCurso = new JLabel("Seleccion de curso");
+		lblSeleccionDeCurso.setForeground(new Color(128, 0, 255));
+		lblSeleccionDeCurso.setFont(new Font("Segoe UI", Font.BOLD, 16));
+		lblSeleccionDeCurso.setBounds(131, 66, 141, 22);
+		tabGestionCursos.add(lblSeleccionDeCurso);
+		
+		JLabel lblNewLabel = new JLabel("Docente vinculado");
+		lblNewLabel.setForeground(new Color(128, 0, 255));
+		lblNewLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+		lblNewLabel.setBounds(120, 192, 167, 14);
+		tabGestionCursos.add(lblNewLabel);
+		
+		txtVacante = new JTextField();
+		txtVacante.setFont(new Font("Segoe UI", Font.BOLD, 14));
+		txtVacante.setText("Vacante");
+		txtVacante.setBounds(107, 217, 180, 22);
+		tabGestionCursos.add(txtVacante);
+		txtVacante.setColumns(10);
+		
+		JButton btnVincularDocente = new JButton("Vincular");
+		btnVincularDocente.setForeground(new Color(255, 255, 255));
+		btnVincularDocente.setBackground(new Color(0, 64, 0));
+		btnVincularDocente.setFont(new Font("Segoe UI", Font.BOLD, 17));
+		btnVincularDocente.setBounds(43, 522, 140, 33);
+		tabGestionCursos.add(btnVincularDocente);
+		
+		JLabel lblNewLabel_1 = new JLabel("");
+		lblNewLabel_1.setIcon(new ImageIcon(VentanaAdmin.class.getResource("/resources/AvatarVioletAchede.png")));
+		lblNewLabel_1.setBounds(94, 250, 205, 200);
+		tabGestionCursos.add(lblNewLabel_1);
+		
+		JButton btnDesvincularDocente = new JButton("Desvincular");
+		btnDesvincularDocente.setForeground(Color.WHITE);
+		btnDesvincularDocente.setFont(new Font("Segoe UI", Font.BOLD, 17));
+		btnDesvincularDocente.setBackground(new Color(128, 0, 0));
+		btnDesvincularDocente.setBounds(196, 522, 140, 33);
+		tabGestionCursos.add(btnDesvincularDocente);
+		
+		JLabel lblEstudiantesEnEl = new JLabel("Estudiantes en el curso");
+		lblEstudiantesEnEl.setForeground(new Color(128, 0, 255));
+		lblEstudiantesEnEl.setFont(new Font("Segoe UI", Font.BOLD, 16));
+		lblEstudiantesEnEl.setBounds(615, 26, 180, 22);
+		tabGestionCursos.add(lblEstudiantesEnEl);
+		
+		JScrollPane scrollPaneEstudiantes_1 = new JScrollPane();
+		scrollPaneEstudiantes_1.setBounds(435, 63, 537, 451);
+		tabGestionCursos.add(scrollPaneEstudiantes_1);
+		
+		tableEstudiantesCurso = new JTable();
+		tableEstudiantesCurso.setModel(new DefaultTableModel(
+			new Object[][] {
+				{null, null},
+				{null, null},
+			},
+			new String[] {
+				"Estudiante", "C.I"
+			}
+		));
+		tableEstudiantesCurso.setRowHeight(30);
+		tableEstudiantesCurso.setFont(new Font("Segoe UI", Font.BOLD, 14));
+		tableEstudiantesCurso.setBackground(new Color(255, 210, 255));
+		scrollPaneEstudiantes_1.setViewportView(tableEstudiantesCurso);
+		
+		JButton btnVincularEstudiante = new JButton("Agregar");
+		btnVincularEstudiante.setForeground(Color.WHITE);
+		btnVincularEstudiante.setFont(new Font("Segoe UI", Font.BOLD, 17));
+		btnVincularEstudiante.setBackground(new Color(0, 64, 0));
+		btnVincularEstudiante.setBounds(684, 530, 140, 33);
+		tabGestionCursos.add(btnVincularEstudiante);
+		
+		JButton btnDesvincularEstudiante = new JButton("Desvincular");
+		btnDesvincularEstudiante.setForeground(Color.WHITE);
+		btnDesvincularEstudiante.setFont(new Font("Segoe UI", Font.BOLD, 17));
+		btnDesvincularEstudiante.setBackground(new Color(128, 0, 0));
+		btnDesvincularEstudiante.setBounds(833, 530, 140, 33);
+		tabGestionCursos.add(btnDesvincularEstudiante);
+		
+		txtCiEstudianteVinculado = new JTextField();
+		txtCiEstudianteVinculado.setBounds(498, 534, 162, 26);
+		tabGestionCursos.add(txtCiEstudianteVinculado);
+		txtCiEstudianteVinculado.setColumns(10);
+		
+		JLabel lblNewLabel_2 = new JLabel("C.I:");
+		lblNewLabel_2.setForeground(new Color(128, 0, 255));
+		lblNewLabel_2.setFont(new Font("Segoe UI", Font.BOLD, 18));
+		lblNewLabel_2.setBounds(462, 533, 30, 22);
+		tabGestionCursos.add(lblNewLabel_2);
+		
+		JButton btnCargarCurso = new JButton("Cargar");
+		btnCargarCurso.setForeground(Color.WHITE);
+		btnCargarCurso.setFont(new Font("Segoe UI", Font.BOLD, 12));
+		btnCargarCurso.setBackground(new Color(128, 0, 255));
+		btnCargarCurso.setBounds(320, 143, 85, 22);
+		tabGestionCursos.add(btnCargarCurso);
+		
+		txtCiDocenteVinculado = new JTextField();
+		txtCiDocenteVinculado.setText("1222333-4");
+		txtCiDocenteVinculado.setFont(new Font("Segoe UI", Font.BOLD, 14));
+		txtCiDocenteVinculado.setColumns(10);
+		txtCiDocenteVinculado.setBounds(119, 461, 180, 33);
+		tabGestionCursos.add(txtCiDocenteVinculado);
+		
+		JLabel lblNewLabel_2_1 = new JLabel("C.I:");
+		lblNewLabel_2_1.setForeground(new Color(128, 0, 255));
+		lblNewLabel_2_1.setFont(new Font("Segoe UI", Font.BOLD, 18));
+		lblNewLabel_2_1.setBounds(75, 464, 30, 22);
+		tabGestionCursos.add(lblNewLabel_2_1);
+		
+		JComboBox cmbSubCurso = new JComboBox();
+		cmbSubCurso.setEnabled(false);
+		cmbSubCurso.setModel(new DefaultComboBoxModel(new String[] {"Base de datos (Ej)"}));
+		cmbSubCurso.setFont(new Font("Segoe UI", Font.BOLD, 12));
+		cmbSubCurso.setBounds(107, 139, 180, 33);
+		tabGestionCursos.add(cmbSubCurso);
+		
 		
 		JPanel tabVisadoAdm = new JPanel();
 		tabbedPane.addTab("Visado\r\n", new ImageIcon(VentanaAdmin.class.getResource("/resources/Libreta.ico")), tabVisadoAdm, null);
@@ -712,10 +897,6 @@ public class VentanaAdmin extends JFrame {
 		tableEstudiantesVisado.getColumnModel().getColumn(3).setPreferredWidth(30);
 		tableEstudiantesVisado.getColumnModel().getColumn(4).setPreferredWidth(48);
 		JTableHeader header = tableEstudiantesVisado.getTableHeader();
-		header.setFont(new Font("Segoe UI", Font.BOLD, 14)); // Fuente más grande y en negrita
-		header.setBackground(new Color(230, 230, 250)); // Color lavanda suave
-		header.setForeground(new Color(60, 60, 60)); // Gris oscuro
-		header.setOpaque(true);
 		tableEstudiantesVisado.setFont(new Font("Segoe UI", Font.BOLD, 14));
 		scrollPaneEstudiantes.setViewportView(tableEstudiantesVisado);
 		

@@ -18,12 +18,16 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.ImageIcon;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JSeparator;
 import javax.swing.JPasswordField;
 import java.awt.Label;
 import java.awt.Cursor;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -70,6 +74,7 @@ public class VentanaLogin extends JFrame {
 		panel.setBounds(0, 0, 800, 500);
 		contentPane.add(panel);
 		panel.setLayout(null);
+		SwingUtilities.invokeLater(() -> panel.requestFocusInWindow()); //tira el focus para que no aparezca el cursor en el txtEmail Boludisimo
 		
 		JLabel lblImagen = new JLabel("");
 		lblImagen.setBounds(244, 5, 296, 225);
@@ -83,7 +88,7 @@ public class VentanaLogin extends JFrame {
 		lblTitulo.setBounds(265, 192, 251, 78);
 		panel.add(lblTitulo);
 		
-		txtEmail = new JTextField();
+		txtEmail = 	new JTextField();
 		txtEmail.setForeground(new Color(128, 128, 128));
 		txtEmail.setBorder(null);
 		txtEmail.setHorizontalAlignment(SwingConstants.LEFT);
@@ -92,6 +97,22 @@ public class VentanaLogin extends JFrame {
 		txtEmail.setBounds(244, 272, 300, 21);
 		panel.add(txtEmail);
 		txtEmail.setColumns(10);
+		
+		txtEmail.addFocusListener(new FocusAdapter() {
+		    public void focusGained(FocusEvent e) {
+		        if (txtEmail.getText().equals("Ingrese su Email")) {
+		            txtEmail.setText("");
+		            txtEmail.setForeground(Color.BLACK); // cambia el color al escribir
+		        }
+		    }
+
+		    public void focusLost(FocusEvent e) {
+		        if (txtEmail.getText().isEmpty()) {
+		            txtEmail.setText("Ingrese su Email");
+		            txtEmail.setForeground(new Color(128, 128, 128)); // vuelve gris
+		        }
+		    }
+		});
 		
 		JSeparator separator = new JSeparator();
 		separator.setForeground(new Color(79, 67, 188));
@@ -109,6 +130,32 @@ public class VentanaLogin extends JFrame {
 		pwdContrasena.setText("Contraseña");
 		pwdContrasena.setBounds(244, 317, 300, 21);
 		panel.add(pwdContrasena);
+		char defaultEchoChar = pwdContrasena.getEchoChar(); 
+		pwdContrasena.setEchoChar((char) 0); 
+		pwdContrasena.setText("Contraseña");
+
+		pwdContrasena.addFocusListener(new FocusAdapter() {
+		    @Override
+		    public void focusGained(FocusEvent e) {
+		        String pass = String.valueOf(pwdContrasena.getPassword());
+		        if (pass.equals("Contraseña")) {
+		            pwdContrasena.setText("");
+		            pwdContrasena.setForeground(Color.BLACK);
+		            pwdContrasena.setEchoChar(defaultEchoChar); // vuelve a mostrar asteriscos
+		        }
+		    }
+
+		    @Override
+		    public void focusLost(FocusEvent e) {
+		        String pass = String.valueOf(pwdContrasena.getPassword());
+		        if (pass.isEmpty()) {
+		            pwdContrasena.setText("Contraseña");
+		            pwdContrasena.setForeground(new Color(128, 128, 128));
+		            pwdContrasena.setEchoChar((char) 0); // sin asteriscos para mostrar texto
+		        }
+		    }
+		});
+
 		
 		JPanel loginBtn = new JPanel();
 		loginBtn.addMouseListener(new MouseAdapter() {
