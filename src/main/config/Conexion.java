@@ -13,13 +13,15 @@ public class Conexion {
                     .ignoreIfMissing()
                     .load();
 
-            String url = String.format("jdbc:postgresql://%s:%s/%s",
-                    dotenv.get("DB_HOST"),
+            String url = String.format("jdbc:postgresql://%s:%s/%s?sslmode=require",
+                    dotenv.get("DB_HOST_NEON"),
                     dotenv.get("DB_PORT"),
                     dotenv.get("DB_NAME"));
-            String usuario = dotenv.get("DB_USER");
-            String contraseña = dotenv.get("DB_PASSWORD");
-            System.out.println("✅ Conectado a PostgreSQL correctamente.");
+            String usuario = dotenv.get("DB_USER_NEON");
+            String contraseña = dotenv.get("DB_PASSWORD_NEON");
+            
+            System.out.println("✅ Conectado a NeonDB correctamente.");
+            //System.out.println("✅ Conectado a PostgreSQL correctamente.");
 
             return DriverManager.getConnection(url, usuario, contraseña);
         } catch (SQLException e) {
