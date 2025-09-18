@@ -194,4 +194,35 @@ public class UsuarioDAO {
         return null; // No se encontró usuario con ese documento
     }
 
+
+	public static List<Usuario> listarUsuariosPorRol(int rolId) {
+				List<Usuario> lista = new ArrayList<>();
+		String sql = "SELECT usuario_id, documento, nombre, apellido, fecha_nacimiento, email, estado, rol_id FROM usuario WHERE rol_id = ?";
+
+		try (Connection conn = Conexion.conectar();
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+			stmt.setInt(1, rolId);
+			ResultSet rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				Usuario u = new Usuario(
+						rs.getInt("usuario_id"),
+						rs.getString("documento"),
+						rs.getString("nombre"),
+						rs.getString("apellido"),
+						rs.getDate("fecha_nacimiento"),
+						rs.getString("email"),
+						rs.getBoolean("estado"),
+						rs.getInt("rol_id")
+				);
+				lista.add(u);
+			}
+
+		} catch (Exception e) {
+			System.err.println("❌ Error al listar usuarios por rol: " + e.getMessage());
+		}
+
+		return lista;}
+
 }

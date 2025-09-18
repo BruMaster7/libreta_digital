@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class UsuarioCursoDAO {
     public List<Curso> obtenerCursosPorUsuario(int idUsuario) throws SQLException {
         List<Curso> cursos = new ArrayList<>();
         String sql = """
-            SELECT c.curso_id, c.nombre_curso, c.descripcion
+            SELECT c.curso_id, c.nombre_curso
             FROM usuario_curso uc
             JOIN curso c ON uc.curso_id = c.curso_id
             WHERE uc.usuario_id = ?
@@ -34,7 +35,6 @@ public class UsuarioCursoDAO {
                     Curso c = new Curso();
                     c.setId(rs.getInt("curso_id"));
                     c.setNombre_curso(rs.getString("nombre_curso"));
-                    c.setDescripcion(rs.getString("descripcion"));
                     cursos.add(c);
                 }
             }
@@ -42,7 +42,7 @@ public class UsuarioCursoDAO {
         return cursos;
     }
     
-    public List<Usuario> obtenerEstudiantesActivosPorCurso(int cursoId) {
+    public static List<Usuario> obtenerEstudiantesActivosPorCurso(int cursoId) {
         List<Usuario> estudiantes = new ArrayList<>();
 
         String sql = "SELECT u.* " +
@@ -78,6 +78,75 @@ public class UsuarioCursoDAO {
 
         return estudiantes;
     }
+
+    public static boolean vincularUsuarioACurso(int usuarioId, int cursoId) {
+        String sql = "INSERT INTO usuario_curso (usuario_id, curso_id, fecha_asignacion) " +
+                     "VALUES (?, ?, TO_DATE(?, 'YYYY-MM-DD'))";
+        try (Connection conn = Conexion.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, usuarioId);
+            stmt.setInt(2, cursoId);
+
+            // Fecha actual en formato yyyy-MM-dd
+            String hoy = LocalDate.now().toString();
+            stmt.setString(3, hoy);
+
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+	public static boolean desvincularUsuarioDeCurso(int id, int id2) {
+		String sql = "DELETE FROM usuario_curso WHERE usuario_id = ? AND curso_id = ?";
+		try (Connection conn = Conexion.conectar();
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+			stmt.setInt(1, id);
+			stmt.setInt(2, id2);
+			
+
+			int filasAfectadas = stmt.executeUpdate();
+			return filasAfectadas > 0;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}return false;
+	}
+
+	public static Usuario obtenerDocentePorCurso(int id) {
+		String sql = "SELECT u.* " +
+					 "FROM usuario u " +
+					 "INNER JOIN usuario_curso uc ON u.usuario_id = uc.usuario_id " +
+					 "WHERE uc.curso_id = ? " +
+					 "AND u.rol_id = 2"; // 2 = Docente
+
+		try (Connection conn = Conexion.conectar();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
+
+			ps.setInt(1, id);
+
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					Usuario u = new Usuario();
+					u.setUsuarioId(rs.getInt("usuario_id"));
+					u.setDocumento(rs.getString("documento"));
+					u.setNombre(rs.getString("nombre"));
+					u.setApellido(rs.getString("apellido"));
+					u.setEmail(rs.getString("email"));
+					u.setEstado(rs.getBoolean("estado"));
+					u.setRol_id(rs.getInt("rol_id"));
+
+					return u;
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();}
+		return null;}
 
 }
 
