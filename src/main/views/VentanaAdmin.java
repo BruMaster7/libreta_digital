@@ -734,9 +734,11 @@ public class VentanaAdmin extends JFrame {
 		tabGestionCursos.add(cmbSubCurso);
 
 		JComboBox cmbCurso = new JComboBox();
+		
 		List<Rama> ramasCrear = RamaService.listarRamas();
 		DefaultComboBoxModel<String> modelCrearRamas = new DefaultComboBoxModel<>();
 		Map<String, Integer> mapaRamas = new HashMap<>();
+		modelCrearRamas.addElement("Seleccione una rama");
 
 		for (Rama rama : ramasCrear) {
 		    modelCrearRamas.addElement(rama.getNombre_rama());
@@ -744,6 +746,7 @@ public class VentanaAdmin extends JFrame {
 		}
 
 		cmbCurso.setModel(modelCrearRamas);
+		cmbCurso.setSelectedIndex(0);
 		cmbCurso.setFont(new Font("Segoe UI", Font.BOLD, 12));
 		cmbCurso.setBounds(107, 95, 180, 33);
 		tabGestionCursos.add(cmbCurso);
@@ -1050,22 +1053,37 @@ public class VentanaAdmin extends JFrame {
 		cmbRamaAlta.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		cmbRamaAlta.setBounds(382, 127, 297, 35);
 		tabAltaCurso.add(cmbRamaAlta);
+
 		List<Rama> ramas = RamaService.listarRamas();
 		DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+		model.addElement("Seleccione una rama");
+
 		for (Rama rama : ramas) {
-			model.addElement(rama.getNombre_rama());
+		    model.addElement(rama.getNombre_rama());
 		}
+
 		cmbRamaAlta.setModel(model);
+		cmbRamaAlta.setSelectedIndex(0);
+
 
 		txtNombreCursoAlta = new JTextField();
 		txtNombreCursoAlta.setFont(new Font("Segoe UI", Font.PLAIN, 16));
 		txtNombreCursoAlta.setColumns(10);
 		txtNombreCursoAlta.setBounds(382, 184, 297, 35);
+		txtNombreCursoAlta.setEnabled(false);
 		tabAltaCurso.add(txtNombreCursoAlta);
+		cmbRamaAlta.addActionListener(e -> {
+		    String seleccion = cmbRamaAlta.getSelectedItem().toString();
+		    if (seleccion != null && !seleccion.equals("Seleccione una rama")) {
+		        txtNombreCursoAlta.setEnabled(true);  
+		    } else {
+		        txtNombreCursoAlta.setEnabled(false); }
+		});		
+		
 
 		JComboBox cmbEstadoCurso = new JComboBox();
 		cmbEstadoCurso.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		cmbEstadoCurso.setBounds(382, 366, 142, 35);
+		cmbEstadoCurso.setBounds(383, 230, 142, 35);
 		tabAltaCurso.add(cmbEstadoCurso);
 		cmbEstadoCurso.setModel(new DefaultComboBoxModel(new String[] { "true", "false" }));
 		
@@ -1105,7 +1123,7 @@ public class VentanaAdmin extends JFrame {
 		btnCrearCurso.setForeground(Color.WHITE);
 		btnCrearCurso.setFont(new Font("Segoe UI", Font.BOLD, 17));
 		btnCrearCurso.setBackground(new Color(128, 0, 255));
-		btnCrearCurso.setBounds(457, 431, 169, 33);
+		btnCrearCurso.setBounds(383, 276, 169, 33);
 		tabAltaCurso.add(btnCrearCurso);
 
 		JLabel lblNewLabel_4 = new JLabel("Rama a la que pertenece:");
@@ -1120,12 +1138,6 @@ public class VentanaAdmin extends JFrame {
 		lblNewLabel_4_1.setBounds(212, 190, 156, 20);
 		tabAltaCurso.add(lblNewLabel_4_1);
 
-		JLabel lblNewLabel_4_1_1 = new JLabel("Descripción:");
-		lblNewLabel_4_1_1.setForeground(new Color(128, 0, 255));
-		lblNewLabel_4_1_1.setFont(new Font("Segoe UI", Font.BOLD, 18));
-		lblNewLabel_4_1_1.setBounds(267, 239, 104, 20);
-		tabAltaCurso.add(lblNewLabel_4_1_1);
-
 		JLabel lblLogoLibAdm_1_1 = new JLabel("New label");
 		lblLogoLibAdm_1_1.setIcon(new ImageIcon(VentanaAdmin.class.getResource("/resources/Libreta.png")));
 		lblLogoLibAdm_1_1.setBounds(605, 4, 151, 106);
@@ -1135,12 +1147,8 @@ public class VentanaAdmin extends JFrame {
 		JLabel lblNewLabel_4_1_1_1 = new JLabel("Estado:");
 		lblNewLabel_4_1_1_1.setForeground(new Color(128, 0, 255));
 		lblNewLabel_4_1_1_1.setFont(new Font("Segoe UI", Font.BOLD, 18));
-		lblNewLabel_4_1_1_1.setBounds(313, 371, 62, 20);
+		lblNewLabel_4_1_1_1.setBounds(306, 235, 62, 20);
 		tabAltaCurso.add(lblNewLabel_4_1_1_1);
-
-		JTextArea txtDescripAltaCurso = new JTextArea();
-		txtDescripAltaCurso.setBounds(382, 241, 297, 114);
-		tabAltaCurso.add(txtDescripAltaCurso);
 
 		JPanel panel = new JPanel();
 		tabbedPane_1.addTab("Listar y editar", null, panel, null);
@@ -1149,28 +1157,30 @@ public class VentanaAdmin extends JFrame {
 		JComboBox cmbCursoEditar = new JComboBox();
 		cmbCursoEditar.setFont(new Font("Segoe UI", Font.BOLD, 12));
 		cmbCursoEditar.setEnabled(false);
-		cmbCursoEditar.setBounds(137, 160, 180, 33);
+		cmbCursoEditar.setBounds(147, 160, 180, 33);
 		panel.add(cmbCursoEditar);
 		cmbCursoEditar.setModel(new DefaultComboBoxModel(new String[] { "Seleccione una rama" }));
 
 		JComboBox cmbRamaEditarCurso = new JComboBox();
 		cmbRamaEditarCurso.setFont(new Font("Segoe UI", Font.BOLD, 12));
-		cmbRamaEditarCurso.setBounds(137, 103, 180, 33);
+		cmbRamaEditarCurso.setBounds(147, 103, 180, 33);
 		panel.add(cmbRamaEditarCurso);
 
-		// Cargar ramas en el combo
 		List<Rama> ramasEditar = RamaService.listarRamas();
 		DefaultComboBoxModel<String> modelEditarRamas = new DefaultComboBoxModel<>();
+		
 		Map<String, Integer> mapaEditarRamas = new HashMap<>();
+		modelEditarRamas.addElement("Seleccione una rama");
+		
 
 		for (Rama rama : ramasEditar) {
 		    modelEditarRamas.addElement(rama.getNombre_rama());
 		    mapaEditarRamas.put(rama.getNombre_rama(), rama.getId());
 		}
-
+		
 		cmbRamaEditarCurso.setModel(modelEditarRamas);
+		cmbRamaEditarCurso.setSelectedIndex(0);
 
-		// ActionListener para llenar cursos según rama seleccionada
 		cmbRamaEditarCurso.addActionListener(e -> {
 		    try {
 		        String ramaSeleccionada = (String) cmbRamaEditarCurso.getSelectedItem();
@@ -1200,21 +1210,22 @@ public class VentanaAdmin extends JFrame {
 
 		
 
-		JLabel lblNewLabel_4_1_1_2 = new JLabel("Descripción:");
+		JLabel lblNewLabel_4_1_1_2 = new JLabel("Nuevo nombre:");
 		lblNewLabel_4_1_1_2.setForeground(new Color(128, 0, 255));
 		lblNewLabel_4_1_1_2.setFont(new Font("Segoe UI", Font.BOLD, 18));
-		lblNewLabel_4_1_1_2.setBounds(23, 218, 104, 20);
+		lblNewLabel_4_1_1_2.setBounds(10, 216, 142, 41);
 		panel.add(lblNewLabel_4_1_1_2);
+		
 
 		JLabel lblNewLabel_4_1_1_1_1 = new JLabel("Estado:");
 		lblNewLabel_4_1_1_1_1.setForeground(new Color(128, 0, 255));
 		lblNewLabel_4_1_1_1_1.setFont(new Font("Segoe UI", Font.BOLD, 18));
-		lblNewLabel_4_1_1_1_1.setBounds(65, 364, 62, 20);
+		lblNewLabel_4_1_1_1_1.setBounds(73, 273, 62, 20);
 		panel.add(lblNewLabel_4_1_1_1_1);
 
 		JComboBox cmbEstado = new JComboBox();
 		cmbEstado.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		cmbEstado.setBounds(137, 359, 142, 35);
+		cmbEstado.setBounds(145, 268, 142, 35);
 		panel.add(cmbEstado);
 		cmbEstado.setModel(new DefaultComboBoxModel(new String[] { "true", "false" }));
 
@@ -1260,14 +1271,25 @@ public class VentanaAdmin extends JFrame {
 		JLabel lblNewLabel_4_1_1_2_1 = new JLabel("Rama:");
 		lblNewLabel_4_1_1_2_1.setForeground(new Color(128, 0, 255));
 		lblNewLabel_4_1_1_2_1.setFont(new Font("Segoe UI", Font.BOLD, 18));
-		lblNewLabel_4_1_1_2_1.setBounds(74, 106, 53, 20);
+		lblNewLabel_4_1_1_2_1.setBounds(84, 106, 53, 20);
 		panel.add(lblNewLabel_4_1_1_2_1);
 
 		JLabel lblNewLabel_4_1_1_2_1_1 = new JLabel("Curso:");
 		lblNewLabel_4_1_1_2_1_1.setForeground(new Color(128, 0, 255));
 		lblNewLabel_4_1_1_2_1_1.setFont(new Font("Segoe UI", Font.BOLD, 18));
-		lblNewLabel_4_1_1_2_1_1.setBounds(74, 160, 53, 20);
+		lblNewLabel_4_1_1_2_1_1.setBounds(84, 160, 53, 20);
 		panel.add(lblNewLabel_4_1_1_2_1_1);
+		
+		JTextArea txtEditarNombreCurso = new JTextArea();
+		txtEditarNombreCurso.setBounds(147, 220, 225, 33);
+		panel.add(txtEditarNombreCurso);
+		//colocar que el texto del curso seleccionado aparezca en el text area
+		cmbCursoEditar.addActionListener(e -> {
+			String cursoSeleccionado = cmbCursoEditar.getSelectedItem().toString();
+			if (cursoSeleccionado != null) {
+				txtEditarNombreCurso.setText(cursoSeleccionado);
+			}
+		});
 
 		JButton btnActualizar = new JButton("Actualizar");
 		btnActualizar.addActionListener(new ActionListener() {
@@ -1275,22 +1297,30 @@ public class VentanaAdmin extends JFrame {
 				try {
 					String rama = cmbRamaEditarCurso.getSelectedItem().toString();
 					int ramaid = RamaService.obtenerRamaIdPorNombre(rama);
-					String nombreCurso = cmbCursoEditar.getSelectedItem().toString();
+					String viejoNombreCurso = cmbCursoEditar.getSelectedItem().toString();
+					String nombreCurso = txtEditarNombreCurso.getText().trim();
 					String estadoStr = cmbEstado.getSelectedItem().toString();
 					boolean estado = Boolean.parseBoolean(estadoStr);
 
-					Curso cursoExistente = CursoService.buscarCursoPorNombre(nombreCurso);
-
+					Curso cursoExistente = CursoService.buscarCursoPorNombre(viejoNombreCurso);
 					cursoExistente.setRama_id(ramaid);
 					cursoExistente.setEstado(estado);
+					cursoExistente.setNombre_curso(nombreCurso);
 
 					boolean exito = CursoService.actualizarCurso(cursoExistente);
 
 					if (exito) {
 						JOptionPane.showMessageDialog(VentanaAdmin.this, "Curso actualizado exitosamente.");
-						cmbRamaEditarCurso.setSelectedIndex(0);
-						cmbCursoEditar.setSelectedIndex(0);
-						cmbEstado.setSelectedIndex(0);
+						  List<Rama> ramasEditarCurso = CursoService.listarCursosPorRama(ramaid);
+			                DefaultComboBoxModel<String> modelCursos = new DefaultComboBoxModel<>();
+			                if (!ramasEditarCurso.isEmpty()) {
+			                    Rama r = ramasEditarCurso.get(0);
+			                    for (Curso c : r.getCursos()) {
+			                        modelCursos.addElement(c.getNombre_curso());
+			                    }
+			                }
+			                cmbCursoEditar.setModel(modelCursos);
+			                cmbCursoEditar.setEnabled(true);
 
 						// Actualizar la tabla de cursos
 						tableCursos = new JTable();
@@ -1330,12 +1360,9 @@ public class VentanaAdmin extends JFrame {
 		btnActualizar.setForeground(Color.WHITE);
 		btnActualizar.setFont(new Font("Segoe UI", Font.BOLD, 17));
 		btnActualizar.setBackground(new Color(128, 0, 255));
-		btnActualizar.setBounds(177, 427, 142, 33);
+		btnActualizar.setBounds(185, 336, 142, 33);
 		panel.add(btnActualizar);
 
-		JTextArea txtDescripcion = new JTextArea();
-		txtDescripcion.setBounds(137, 220, 225, 114);
-		panel.add(txtDescripcion);
 
 		JPanel tabBajaCurso = new JPanel();
 		tabbedPane_1.addTab("Dar de baja", null, tabBajaCurso, null);
@@ -1375,6 +1402,7 @@ public class VentanaAdmin extends JFrame {
 		List<Rama> ramasBaja = RamaService.listarRamas();
 		DefaultComboBoxModel<String> modelRamasBaja = new DefaultComboBoxModel<>();
 		Map<String, Integer> mapaRamasBaja = new HashMap<>();
+		modelRamasBaja.addElement("Seleccione una rama");
 
 		for (Rama rama : ramasBaja) {
 		    modelRamasBaja.addElement(rama.getNombre_rama());
@@ -1382,7 +1410,7 @@ public class VentanaAdmin extends JFrame {
 		}
 
 		cmbRamaCursoBaja.setModel(modelRamasBaja);
-
+		cmbRamaCursoBaja.setSelectedIndex(0);
 		// ActionListener para cargar cursos según rama seleccionada
 		cmbRamaCursoBaja.addActionListener(e -> {
 		    try {
