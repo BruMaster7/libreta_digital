@@ -16,7 +16,7 @@ public class CursoDAO {
     // --- LISTAR TODOS LOS CURSOS ---
     public static List<Curso> listarCursos() {
         List<Curso> lista = new ArrayList<>();
-        String sql = "SELECT curso_id, nombre_curso, descripcion, estado FROM curso";
+        String sql = "SELECT curso_id, nombre_curso, estado, rama_id FROM curso";
 
         try (Connection conn = Conexion.conectar();
              Statement stmt = conn.createStatement();
@@ -26,8 +26,8 @@ public class CursoDAO {
                 Curso c = new Curso(
                         rs.getInt("curso_id"),
                         rs.getString("nombre_curso"),
-                        rs.getString("descripcion"),
-                        rs.getBoolean("estado")
+                        rs.getBoolean("estado"),
+                        rs.getInt("rama_id")
                 );
                 lista.add(c);
             }
@@ -41,7 +41,7 @@ public class CursoDAO {
 
     // --- BUSCAR CURSO POR ID ---
     public static Curso buscarPorId(int id) {
-        String sql = "SELECT curso_id, nombre_curso, descripcion, estado FROM curso WHERE curso_id = ?";
+        String sql = "SELECT curso_id, nombre_curso, estado, rama_id FROM curso WHERE curso_id = ?";
         try (Connection conn = Conexion.conectar();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -52,8 +52,8 @@ public class CursoDAO {
                 return new Curso(
                         rs.getInt("curso_id"),
                         rs.getString("nombre_curso"),
-                        rs.getString("descripcion"),
-                        rs.getBoolean("estado")
+                        rs.getBoolean("estado"),
+                        rs.getInt("rama_id")
                 );
             }
 
@@ -65,33 +65,32 @@ public class CursoDAO {
 
     // --- AGREGAR CURSO ---
     public static boolean agregarCurso(Curso curso) {
-        String sql = "INSERT INTO curso (nombre_curso, descripcion, estado) VALUES (?, ?, ?)";
-        try (Connection conn = Conexion.conectar();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    			String sql = "INSERT INTO curso (nombre_curso, estado, rama_id) VALUES (?, ?, ?)";
+		try (Connection conn = Conexion.conectar();
+			 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, curso.getNombre_curso());
-            stmt.setString(2, curso.getDescripcion());
-            stmt.setBoolean(3, curso.isEstado());
+			stmt.setString(1, curso.getNombre_curso());
+			stmt.setBoolean(2, curso.isEstado());
+			stmt.setInt(3, curso.getRama_id());
 
-            int filas = stmt.executeUpdate();
-            return filas > 0;
+			int filas = stmt.executeUpdate();
+			return filas > 0;
 
-        } catch (SQLException e) {
-            System.err.println("❌ Error al agregar curso: " + e.getMessage());
-            return false;
-        }
+		} catch (SQLException e) {
+			System.err.println("❌ Error al agregar curso: " + e.getMessage());
+			return false;
+		}
     }
 
     // --- MODIFICAR CURSO ---
     public static boolean modificarCurso(Curso curso) {
-        String sql = "UPDATE curso SET nombre_curso = ?, descripcion = ?, estado = ? WHERE curso_id = ?";
+        String sql = "UPDATE curso SET nombre_curso = ?, estado = ? WHERE curso_id = ?";
         try (Connection conn = Conexion.conectar();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, curso.getNombre_curso());
-            stmt.setString(2, curso.getDescripcion());
-            stmt.setBoolean(3, curso.isEstado());
-            stmt.setInt(4, curso.getId());
+            stmt.setBoolean(2, curso.isEstado());
+            stmt.setInt(3, curso.getId());
 
             int filas = stmt.executeUpdate();
             return filas > 0;
@@ -114,6 +113,41 @@ public class CursoDAO {
 
         } catch (SQLException e) {
             System.err.println("❌ Error al eliminar curso: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static Curso buscarPorNombre(String nombre) {
+		String sql = "SELECT * FROM curso WHERE nombre_curso = ?";
+		try (Connection conn = Conexion.conectar();
+			PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setString(1, nombre);
+			ResultSet rs = stmt.executeQuery();
+
+			if (rs.next()) {
+				Curso miCurso = new Curso();
+				miCurso.setId(rs.getInt("curso_id"));
+				miCurso.setNombre_curso(rs.getString("nombre_curso"));
+				miCurso.setEstado(rs.getBoolean("estado"));
+				return miCurso;
+			}
+
+		} catch (SQLException e) {
+			System.err.println("❌ Error al buscar curso: " + e.getMessage());
+		} return null;
+	}
+
+    public static boolean DarDeBajaCurso(String nombre_curso) {
+        String sql = "UPDATE Curso SET estado = false WHERE nombre_curso = ?";
+        try (Connection conn = Conexion.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, nombre_curso);
+            int filasAfectadas = stmt.executeUpdate();
+            return filasAfectadas > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
             return false;
         }
     }

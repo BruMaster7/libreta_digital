@@ -89,7 +89,59 @@ public class CalificacionDAO {
         }
         return lista;
     }
-	
-}
+
+	public CalificacionDetalle obtenerCalificacionPorEstudianteYEvaluacion(int id, int id2) {
+		CalificacionDetalle detalle = null;
+		String sql = """
+			SELECT c.nombre_curso, e.nombre_evaluacion, 
+				   e.tipo_evaluacion, cal.nota
+			FROM calificacion cal
+			JOIN evaluacion e ON cal.evaluacion_id = e.evaluacion_id
+			JOIN curso c ON e.curso_id = c.curso_id
+			WHERE cal.usuario_id = ? AND e.evaluacion_id = ?
+			""";
+		
+		try (Connection conexion = Conexion.conectar();
+			 PreparedStatement stmt = conexion.prepareStatement(sql)) {
+			
+			stmt.setInt(1, id);
+			stmt.setInt(2, id2);
+			ResultSet rs = stmt.executeQuery();
+			
+			if (rs.next()) {
+				detalle = new CalificacionDetalle(
+					rs.getString("nombre_curso"),
+					rs.getString("nombre_evaluacion"),
+					rs.getString("tipo_evaluacion"),
+					rs.getFloat("nota")
+				);
+			}
+		} catch (SQLException e) {
+			System.err.println("Error al obtener calificación: " + e.getMessage());
+		}
+		return detalle;
+	}
+
+	public static boolean guardarCalificacion(int estudianteId, int evaluacionId, float nota) {
+	    String sql = "INSERT INTO calificacion (usuario_id, evaluacion_id, nota) " +
+	                 "VALUES (?, ?, ?) " +
+	                 "ON CONFLICT (usuario_id, evaluacion_id) DO UPDATE SET nota = EXCLUDED.nota";
+
+	    try (Connection conn = Conexion.conectar();
+	         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+	        stmt.setInt(1, estudianteId);
+	        stmt.setInt(2, evaluacionId);
+	        stmt.setFloat(3, nota);
+
+	        int filasAfectadas = stmt.executeUpdate();
+	        return filasAfectadas > 0;
+
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}}
+
 
 

@@ -1,6 +1,7 @@
 package main.services;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import main.dao.UsuarioDAO;
 import main.model.Usuario;
@@ -75,6 +76,10 @@ public class UsuarioService {
 		            throw new Exception("La contraseña debe tener al menos 4 caracteres.");
 		        }
 		        return true;
+	}
+
+	public static List<Usuario> listarUsuariosPorRol(int rolId) {
+		return UsuarioDAO.listarUsuariosPorRol(rolId);
 	}
 }
 
