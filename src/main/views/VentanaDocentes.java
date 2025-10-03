@@ -24,7 +24,10 @@ import main.dao.UsuarioDAO;
 import main.model.Asistencia;
 import main.model.CalificacionDetalle;
 import main.model.Curso;
+import main.model.Evaluacion;
 import main.model.Usuario;
+import main.services.CalificacionService;
+import main.services.EvaluacionService;
 import main.views.personalized.AsistenciaEditor;
 import main.views.personalized.AsistenciaRenderer;
 
@@ -34,6 +37,9 @@ import javax.swing.JTextField;
 import javax.swing.JSeparator;
 import javax.swing.JFormattedTextField;
 import javax.swing.JTextArea;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.sql.Connection;
@@ -45,6 +51,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
 import java.awt.GridLayout;
@@ -84,10 +91,9 @@ public class VentanaDocentes extends JFrame {
     private List<Usuario> estudiantesDelCurso;
     private JDateChooser dChooserFechaCargada;
     private JDateChooser dChooserFechaGuardada;
-    private JTextField textField;
     private JTable tableEvaluar;
     private JTextField txtReplanifAnual;
-	// Clase interna para el resumen del estudiante en el curso
+    private JTextField txtTituloEvaluacion;	// Clase interna para el resumen del estudiante en el curso
     public class ResumenEstudianteCurso {
         private String documento;
         private String nombre;
@@ -204,7 +210,7 @@ public class VentanaDocentes extends JFrame {
 		panelEstudiantes.add(lblNewLabel);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(0, 19, 993, 501);
+		scrollPane.setBounds(10, 11, 993, 501);
 		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 		panelEstudiantes.add(scrollPane);
 		
@@ -241,22 +247,8 @@ public class VentanaDocentes extends JFrame {
 		panelEstudiantes.add(panelBtnEstudiantes);
 		panelBtnEstudiantes.setLayout(null);
 		
-		JButton btnAgregarNota_1 = new JButton("Agregar nota");
-		btnAgregarNota_1.setBounds(183, 5, 165, 25);
-		btnAgregarNota_1.setForeground(Color.WHITE);
-		btnAgregarNota_1.setFont(new Font("Arial", Font.BOLD, 14));
-		btnAgregarNota_1.setBackground(new Color(128, 0, 255));
-		panelBtnEstudiantes.add(btnAgregarNota_1);
-		
-		JButton btnEditarNota_1 = new JButton("Editar nota\r\n");
-		btnEditarNota_1.setBounds(388, 5, 165, 25);
-		btnEditarNota_1.setForeground(Color.WHITE);
-		btnEditarNota_1.setFont(new Font("Arial", Font.BOLD, 14));
-		btnEditarNota_1.setBackground(new Color(128, 0, 255));
-		panelBtnEstudiantes.add(btnEditarNota_1);
-		
 		JButton btnCerrarPromedios_1 = new JButton("Cerrar Promedios");
-		btnCerrarPromedios_1.setBounds(595, 5, 165, 25);
+		btnCerrarPromedios_1.setBounds(390, 3, 165, 25);
 		btnCerrarPromedios_1.setForeground(Color.WHITE);
 		btnCerrarPromedios_1.setFont(new Font("Arial", Font.BOLD, 14));
 		btnCerrarPromedios_1.setBackground(new Color(128, 0, 255));
@@ -311,18 +303,6 @@ public class VentanaDocentes extends JFrame {
 		lblTipoEv_1.setBounds(91, 232, 34, 14);
 		panelEvaluaciones.add(lblTipoEv_1);
 		
-		JLabel lblDocumentoPlanif = new JLabel("Link (opcional):");
-		lblDocumentoPlanif.setFont(new Font("Arial", Font.BOLD, 14));
-		lblDocumentoPlanif.setBounds(14, 324, 111, 14);
-		panelEvaluaciones.add(lblDocumentoPlanif);
-		
-		textField = new JTextField();
-		textField.setBackground(new Color(216, 191, 216));
-		textField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-		textField.setColumns(10);
-		textField.setBounds(131, 318, 222, 24);
-		panelEvaluaciones.add(textField);
-		
 		JLabel lblContenidoEvaluacion_1 = new JLabel("Contenido");
 		lblContenidoEvaluacion_1.setFont(new Font("Arial", Font.BOLD, 14));
 		lblContenidoEvaluacion_1.setBounds(639, 89, 77, 14);
@@ -336,32 +316,83 @@ public class VentanaDocentes extends JFrame {
 		txtrIngreseLosContenidos_1.setBounds(452, 114, 468, 224);
 		panelEvaluaciones.add(txtrIngreseLosContenidos_1);
 		
+		txtTituloEvaluacion = new JTextField();
+		txtTituloEvaluacion.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+		txtTituloEvaluacion.setColumns(10);
+		txtTituloEvaluacion.setBackground(new Color(216, 191, 216));
+		txtTituloEvaluacion.setBounds(131, 271, 222, 24);
+		panelEvaluaciones.add(txtTituloEvaluacion);
+
 		JButton btnGuardarEvaluacion = new JButton("Guardar Evaluación");
 		btnGuardarEvaluacion.setForeground(Color.WHITE);
 		btnGuardarEvaluacion.setFont(new Font("Arial", Font.BOLD, 14));
 		btnGuardarEvaluacion.setBackground(new Color(128, 0, 255));
 		btnGuardarEvaluacion.setBounds(337, 421, 185, 57);
 		panelEvaluaciones.add(btnGuardarEvaluacion);
+		btnGuardarEvaluacion.addActionListener(new ActionListener() {
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+		        try {
+		            java.util.Date fecha = dChooserEvaluacion.getDate();
+		            String tipo = comboBox_1.getSelectedItem().toString();
+		            String descripcion = txtrIngreseLosContenidos_1.getText();
+		            String titulo = txtTituloEvaluacion.getText();
+
+		            // Crear objeto Evaluacion
+		            Evaluacion evaluacion = new Evaluacion();
+		            evaluacion.setCurso_id(Curso.getId());
+		            evaluacion.setNombre_evaluacion(titulo);
+		            evaluacion.setFecha_evaluacion(fecha);
+		            evaluacion.setTipo_evaluacion(tipo);
+		            evaluacion.setDescripcion(descripcion);
+
+		            // Enviar al servicio
+		            boolean exito = EvaluacionService.guardarEvaluacion(evaluacion);
+		            if (exito) {
+		                JOptionPane.showMessageDialog(null, "Evaluación guardada con éxito");
+
+		                dChooserEvaluacion.setDate(null);
+		                comboBox_1.setSelectedIndex(0);
+		                txtrIngreseLosContenidos_1.setText("");
+		                txtTituloEvaluacion.setText("");
+		            } else {
+		                JOptionPane.showMessageDialog(null, "Error al guardar la evaluación", "Error", JOptionPane.ERROR_MESSAGE);
+		            }
+		        } catch (Exception ex) {
+		            JOptionPane.showMessageDialog(null, "Error al guardar evaluación: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		        }
+		    }
+		});
+
+
+		
+		JLabel lblTtulo = new JLabel("Título:");
+		lblTtulo.setFont(new Font("Arial", Font.BOLD, 14));
+		lblTtulo.setBounds(78, 278, 47, 14);
+		panelEvaluaciones.add(lblTtulo);
 		
 		JPanel panelEvaluar = new JPanel();
 		panelEvaluar.setForeground(new Color(255, 255, 255));
 		tabbedPane_1.addTab("Evaluar", null, panelEvaluar, null);
 		panelEvaluar.setLayout(null);
-		
-		JList listEvaluaciones = new JList();
+
+		// Obtener evaluaciones del curso seleccionado
+		int cursoId = Curso.getId(); // suponiendo que Curso.getId() devuelve el ID del curso actual
+		List<Evaluacion> evaluaciones = EvaluacionService.listarEvaluacionesPorCurso(cursoId);
+
+		// Crear un DefaultListModel y llenarlo con los nombres de las evaluaciones
+		DefaultListModel<String> modelo = new DefaultListModel<>();
+		for (Evaluacion ev : evaluaciones) {
+		    modelo.addElement(ev.getNombre_evaluacion());
+		}
+
+		// Crear el JList usando el modelo dinámico
+		JList<String> listEvaluaciones = new JList<>(modelo);
 		listEvaluaciones.setBackground(new Color(216, 191, 216));
 		listEvaluaciones.setFont(new Font("Segoe UI", Font.BOLD, 14));
-		listEvaluaciones.setModel(new AbstractListModel() {
-			String[] values = new String[] {"Ejemplo", "Actividad Diagramas de flujo", "Actividad python", "Mer de restaurante"};
-			public int getSize() {
-				return values.length;
-			}
-			public Object getElementAt(int index) {
-				return values[index];
-			}
-		});
 		listEvaluaciones.setBounds(30, 62, 231, 279);
 		panelEvaluar.add(listEvaluaciones);
+
 		
 		JLabel lblNewLabel_4 = new JLabel("Actividades creadas");
 		lblNewLabel_4.setForeground(new Color(128, 0, 255));
@@ -417,39 +448,167 @@ public class VentanaDocentes extends JFrame {
 		tableEvaluar.getColumnModel().getColumn(1).setMaxWidth(220);
 		scrollPaneEstudiantes_1.setViewportView(tableEvaluar);
 		
-		JButton btnCargarEvaluacion = new JButton("Cargar ");
-		btnCargarEvaluacion.setBackground(new Color(128, 0, 255));
-		btnCargarEvaluacion.setForeground(new Color(255, 255, 255));
-		btnCargarEvaluacion.setFont(new Font("Segoe UI", Font.BOLD, 13));
-		btnCargarEvaluacion.setBounds(30, 475, 111, 39);
-		panelEvaluar.add(btnCargarEvaluacion);
-		
-		JButton btnGuardarEvaluacionNota = new JButton("Guardar");
-		btnGuardarEvaluacionNota.setForeground(new Color(255, 255, 255));
-		btnGuardarEvaluacionNota.setBackground(new Color(128, 0, 255));
-		btnGuardarEvaluacionNota.setFont(new Font("Segoe UI", Font.BOLD, 13));
-		btnGuardarEvaluacionNota.setBounds(600, 462, 120, 39);
-		panelEvaluar.add(btnGuardarEvaluacionNota);
-		
 		JLabel lblNewLabel_1 = new JLabel("Descripción de la evaluación:");
 		lblNewLabel_1.setForeground(new Color(128, 0, 255));
 		lblNewLabel_1.setFont(new Font("Segoe UI", Font.BOLD, 11));
 		lblNewLabel_1.setBounds(65, 352, 154, 14);
 		panelEvaluar.add(lblNewLabel_1);
 		
-		JTextArea textArea = new JTextArea();
-		textArea.setBackground(new Color(211, 211, 211));
-		textArea.setEditable(false);
-		textArea.setBounds(42, 367, 204, 97);
-		panelEvaluar.add(textArea);
+		JTextArea textAreaDescripcion = new JTextArea();
+		textAreaDescripcion.setBackground(new Color(211, 211, 211));
+		textAreaDescripcion.setEditable(false);
+		textAreaDescripcion.setBounds(42, 367, 204, 97);
+		panelEvaluar.add(textAreaDescripcion);
+		JButton btnCargarEvaluacion = new JButton("Cargar ");
+		btnCargarEvaluacion.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String evaluacionSeleccionada = listEvaluaciones.getSelectedValue();
+				if (evaluacionSeleccionada == null) {
+				    JOptionPane.showMessageDialog(null, "Por favor, seleccione una evaluación de la lista.", "Error", JOptionPane.ERROR_MESSAGE);
+				    return;
+				}
+
+				// Obtener la evaluación completa por su nombre y curso
+				Evaluacion ev = EvaluacionService.obtenerEvaluacionPorNombreYCursos(evaluacionSeleccionada, cursoId);
+				if (ev == null) {
+				    JOptionPane.showMessageDialog(null, "No se encontró la evaluación seleccionada.", "Error", JOptionPane.ERROR_MESSAGE);
+				    return;
+				}
+				// Mostrar la descripción de la evaluación
+				textAreaDescripcion.setText(ev.getDescripcion());
+
+				// Cargar los estudiantes del curso
+				estudiantesDelCurso = usuarioCursoDAO.obtenerEstudiantesActivosPorCurso(cursoId);
+
+				// Crear el modelo para la tabla
+				DefaultTableModel model = (DefaultTableModel) tableEvaluar.getModel();
+				model.setRowCount(0); // Limpiar filas existentes
+
+				// Llenar la tabla con los estudiantes y sus calificaciones para la evaluación seleccionada
+				for (Usuario estudiante : estudiantesDelCurso) {
+				    CalificacionDetalle calificacion = calificacionDAO.obtenerCalificacionPorEstudianteYEvaluacion(estudiante.getId(), ev.getId());
+				    Float nota = calificacion != null ? calificacion.getNota() : null;
+				    model.addRow(new Object[] {
+				        estudiante.getNombre() + " " + estudiante.getApellido(),
+				        nota != null ? nota : ""
+				    });
+				}}
+		});
+		btnCargarEvaluacion.setBackground(new Color(128, 0, 255));
+		btnCargarEvaluacion.setForeground(new Color(255, 255, 255));
+		btnCargarEvaluacion.setFont(new Font("Segoe UI", Font.BOLD, 13));
+		btnCargarEvaluacion.setBounds(30, 475, 111, 39);
+		panelEvaluar.add(btnCargarEvaluacion);
 		
 		JButton btnEliminarEvaluacion = new JButton("Eliminar");
+		btnEliminarEvaluacion.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+									    String evaluacionSeleccionada = listEvaluaciones.getSelectedValue();
+				    if (evaluacionSeleccionada == null) {
+				        JOptionPane.showMessageDialog(null, "Por favor, seleccione una evaluación de la lista.", "Error", JOptionPane.ERROR_MESSAGE);
+				        return;
+				    }
+
+				    // Obtener la evaluación completa por su nombre y curso
+				    Evaluacion ev = EvaluacionService.obtenerEvaluacionPorNombreYCursos(evaluacionSeleccionada, cursoId);
+				    if (ev == null) {
+				        JOptionPane.showMessageDialog(null, "No se encontró la evaluación seleccionada.", "Error", JOptionPane.ERROR_MESSAGE);
+				        return;
+				    }
+
+				    // Confirmar eliminación
+				    int confirm = JOptionPane.showConfirmDialog(null, "¿Está seguro de que desea eliminar la evaluación \"" + ev.getNombre_evaluacion() + "\"?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+				    if (confirm != JOptionPane.YES_OPTION) {
+				        return; // Si no confirma, salir del método
+				    }
+
+				    // Eliminar la evaluación
+				    boolean exito = EvaluacionService.eliminarEvaluacion(ev.getId());
+				    if (exito) {
+				        JOptionPane.showMessageDialog(null, "Evaluación eliminada con éxito.");
+
+				        // Actualizar la lista y limpiar la tabla
+				        modelo.removeElement(evaluacionSeleccionada);
+				        DefaultTableModel model = (DefaultTableModel) tableEvaluar.getModel();
+				        model.setRowCount(0); // Limpiar filas existentes
+				        textAreaDescripcion.setText("");
+				    } else {
+				        JOptionPane.showMessageDialog(null, "Error al eliminar la evaluación.", "Error", JOptionPane.ERROR_MESSAGE);
+				    }
+				} catch (Exception ex) {
+				    JOptionPane.showMessageDialog(null, "Error al eliminar evaluación: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);}
+			}
+		});
 		btnEliminarEvaluacion.setForeground(Color.WHITE);
 		btnEliminarEvaluacion.setFont(new Font("Segoe UI", Font.BOLD, 13));
 		btnEliminarEvaluacion.setBackground(new Color(169, 169, 169));
 		btnEliminarEvaluacion.setBounds(150, 475, 111, 39);
 		panelEvaluar.add(btnEliminarEvaluacion);
-		
+		JButton btnGuardarEvaluacionNota = new JButton("Guardar");
+
+		btnGuardarEvaluacionNota.setForeground(new Color(255, 255, 255));
+		btnGuardarEvaluacionNota.setBackground(new Color(128, 0, 255));
+		btnGuardarEvaluacionNota.setFont(new Font("Segoe UI", Font.BOLD, 13));
+		btnGuardarEvaluacionNota.setBounds(600, 462, 120, 39);
+		panelEvaluar.add(btnGuardarEvaluacionNota);
+
+		btnGuardarEvaluacionNota.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+		        try {
+		            // Verificamos que haya una evaluación seleccionada
+		            String evaluacionSeleccionada = listEvaluaciones.getSelectedValue();
+		            if (evaluacionSeleccionada == null) {
+		                JOptionPane.showMessageDialog(null, "Seleccione una evaluación primero.", "Error", JOptionPane.ERROR_MESSAGE);
+		                return;
+		            }
+
+		            Evaluacion ev = EvaluacionService.obtenerEvaluacionPorNombreYCursos(evaluacionSeleccionada, cursoId);
+		            if (ev == null) {
+		                JOptionPane.showMessageDialog(null, "No se encontró la evaluación seleccionada.", "Error", JOptionPane.ERROR_MESSAGE);
+		                return;
+		            }
+
+		            // Recorremos la tabla y guardamos cada nota
+		            DefaultTableModel model = (DefaultTableModel) tableEvaluar.getModel();
+
+		            for (int i = 0; i < model.getRowCount(); i++) {
+		                String nombreCompleto = (String) model.getValueAt(i, 0);
+		                Object notaObj = model.getValueAt(i, 1);
+
+		                if (notaObj == null || notaObj.toString().isEmpty()) {
+		                    continue; // ignorar si no hay nota
+		                }
+
+		                float nota;
+		                try {
+		                    nota = Float.parseFloat(notaObj.toString());
+		                } catch (NumberFormatException ex) {
+		                    JOptionPane.showMessageDialog(null, "Nota inválida en la fila " + (i + 1), "Error", JOptionPane.ERROR_MESSAGE);
+		                    continue;
+		                }
+
+		                // Buscamos el estudiante por nombre completo
+		                Usuario estudiante = estudiantesDelCurso.stream()
+		                        .filter(u -> (u.getNombre() + " " + u.getApellido()).equals(nombreCompleto))
+		                        .findFirst()
+		                        .orElse(null);
+
+		                if (estudiante != null) {
+		                    // Guardamos la calificación
+		                	boolean exito = CalificacionService.guardarCalificacion(estudiante.getId(), ev.getId(), nota);
+		                }
+		            }
+
+		            JOptionPane.showMessageDialog(null, "Notas guardadas correctamente.");
+
+		        } catch (Exception ex) {
+		            JOptionPane.showMessageDialog(null, "Error al guardar notas: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+		            ex.printStackTrace();
+		        }
+		    }
+		});
+
 		JPanel tabPlanificaciones = new JPanel();
 		tabbedPane.addTab("Planificaciones", null, tabPlanificaciones, null);
 		tabPlanificaciones.setLayout(null);
@@ -588,16 +747,16 @@ public class VentanaDocentes extends JFrame {
 		tableLista.setRowHeight(24);
 		tableLista.setBackground(new Color(219, 183, 255));
 		tableLista.setFont(new Font("Arial", Font.BOLD, 14));
-		DefaultTableModel modelo = new DefaultTableModel(
+		DefaultTableModel modelo1 = new DefaultTableModel(
 			    new Object[][] {},
 			    new String[] { "Estudiante", "Condición" }
 			);
-		tableLista.setModel(modelo);
+		tableLista.setModel(modelo1);
 		tableLista.getColumnModel().getColumn(1).setCellRenderer(new AsistenciaRenderer());
 		tableLista.getColumnModel().getColumn(1).setCellEditor(new AsistenciaEditor());
 		List<Usuario> estudiantes = usuarioCursoDAO.obtenerEstudiantesActivosPorCurso(Curso.getId());
 		for (Usuario est : estudiantes) {
-		    modelo.addRow(new Object[] { est.getNombre() + " " + est.getApellido(), null });
+		    modelo1.addRow(new Object[] { est.getNombre() + " " + est.getApellido(), null });
 		}
 		// Dentro del constructor, al crear la tabla de pasar lista:
 		estudiantesDelCurso = usuarioCursoDAO.obtenerEstudiantesActivosPorCurso(Curso.getId());
