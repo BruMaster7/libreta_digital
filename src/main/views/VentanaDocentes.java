@@ -24,10 +24,14 @@ import main.dao.UsuarioDAO;
 import main.model.Asistencia;
 import main.model.CalificacionDetalle;
 import main.model.Curso;
+import main.model.Desarrollo;
 import main.model.Evaluacion;
+import main.model.Planificacion;
 import main.model.Usuario;
 import main.services.CalificacionService;
+import main.services.DesarrolloService;
 import main.services.EvaluacionService;
+import main.services.PlanificacionService;
 import main.views.personalized.AsistenciaEditor;
 import main.views.personalized.AsistenciaRenderer;
 
@@ -80,7 +84,6 @@ public class VentanaDocentes extends JFrame {
 	private JTable table;
 	private JTable tableLista;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
-	private JTextField textLinkPlanif;
 	private final ButtonGroup buttonGroup_1 = new ButtonGroup();
 	private final ButtonGroup buttonGroup_2 = new ButtonGroup();
 	private final ButtonGroup buttonGroup_3 = new ButtonGroup();
@@ -92,7 +95,8 @@ public class VentanaDocentes extends JFrame {
     private JDateChooser dChooserFechaCargada;
     private JDateChooser dChooserFechaGuardada;
     private JTable tableEvaluar;
-    private JTextField txtReplanifAnual;
+	private JDateChooser dChooserDesarrollo;
+
     private JTextField txtTituloEvaluacion;	// Clase interna para el resumen del estudiante en el curso
     public class ResumenEstudianteCurso {
         private String documento;
@@ -630,6 +634,33 @@ public class VentanaDocentes extends JFrame {
 		textPlanifAnual.setColumns(10);
 		
 		JButton btnGuardarPlanif = new JButton("Guardar Planificación");
+		btnGuardarPlanif.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Planificacion plani = new Planificacion();
+				String link = textPlanifAnual.getText();
+				plani.setCurso_id(Curso.getId());
+				plani.setHipervinculo(link);
+				plani.setAutor_id(Docente.getId());
+				java.util.Date fechaActual = new java.util.Date();
+				plani.setFecha(fechaActual);
+				if (link.isEmpty()) {
+				    JOptionPane.showMessageDialog(null, "Por favor, ingrese un link válido.", "Error", JOptionPane.ERROR_MESSAGE);
+				    return;
+				}
+
+				try {
+				    Boolean exito = PlanificacionService.guardarPlanificacionAnual(plani);
+				    if (exito) {
+				        JOptionPane.showMessageDialog(null, "Planificación guardada con éxito.");
+				        textPlanifAnual.setText("");
+				    } else {
+				        JOptionPane.showMessageDialog(null, "Error al guardar la planificación.", "Error", JOptionPane.ERROR_MESSAGE);
+				    }
+				} catch (Exception ex) {
+				    JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
 		btnGuardarPlanif.setFont(new Font("Segoe UI", Font.BOLD, 13));
 		btnGuardarPlanif.setForeground(new Color(255, 255, 255));
 		btnGuardarPlanif.setBackground(new Color(128, 0, 255));
@@ -651,11 +682,6 @@ public class VentanaDocentes extends JFrame {
 		lblIconoPlano.setBounds(425, 27, 156, 123);
 		panelPlanificaciones.add(lblIconoPlano);
 		
-		JLabel lblSubirPlanif_1 = new JLabel("Subir replanificación anual (Link público de drive)");
-		lblSubirPlanif_1.setFont(new Font("Arial", Font.BOLD, 14));
-		lblSubirPlanif_1.setBounds(292, 374, 356, 24);
-		panelPlanificaciones.add(lblSubirPlanif_1);
-		
 		JSeparator separator = new JSeparator();
 		separator.setBounds(841, 335, -807, -10);
 		panelPlanificaciones.add(separator);
@@ -664,19 +690,6 @@ public class VentanaDocentes extends JFrame {
 		separator_2.setForeground(new Color(128, 0, 255));
 		separator_2.setBounds(-160, 327, 1151, 13);
 		panelPlanificaciones.add(separator_2);
-		
-		txtReplanifAnual = new JTextField();
-		txtReplanifAnual.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-		txtReplanifAnual.setColumns(10);
-		txtReplanifAnual.setBounds(229, 409, 477, 29);
-		panelPlanificaciones.add(txtReplanifAnual);
-		
-		JButton btnGuardarReplanif = new JButton("Guardar Planificación");
-		btnGuardarReplanif.setFont(new Font("Segoe UI", Font.BOLD, 13));
-		btnGuardarReplanif.setForeground(Color.WHITE);
-		btnGuardarReplanif.setBackground(new Color(128, 0, 255));
-		btnGuardarReplanif.setBounds(376, 463, 185, 50);
-		panelPlanificaciones.add(btnGuardarReplanif);
 		
 		JPanel tabPasarLista = new JPanel();
 		tabbedPane.addTab("Pasar Lista", null, tabPasarLista, null);
@@ -920,62 +933,134 @@ public class VentanaDocentes extends JFrame {
 		textDesarrollo.setBounds(125, 182, 450, 163);
 		panelDesarrollo.add(textDesarrollo);
 		
-		JLabel lblLinkPlanif = new JLabel("Link a planificación (Opcional):");
-		lblLinkPlanif.setFont(new Font("Arial", Font.BOLD, 14));
-		lblLinkPlanif.setBounds(38, 383, 218, 14);
-		panelDesarrollo.add(lblLinkPlanif);
+		JDateChooser dChooserDesarrollo = new JDateChooser();
+		dChooserDesarrollo.setBackground(new Color(216, 191, 216));
+		dChooserDesarrollo.setBounds(125, 130, 162, 27);
+		panelDesarrollo.add(dChooserDesarrollo);
 		
-		textLinkPlanif = new JTextField();
-		textLinkPlanif.setBackground(new Color(216, 191, 216));
-		textLinkPlanif.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-		textLinkPlanif.setBounds(255, 381, 218, 20);
-		panelDesarrollo.add(textLinkPlanif);
-		textLinkPlanif.setColumns(10);
 		
-		JButton btnVerHistorial = new JButton("Ver contenido");
-		btnVerHistorial.setFont(new Font("Arial", Font.BOLD, 14));
-		btnVerHistorial.setForeground(new Color(255, 255, 255));
-		btnVerHistorial.setBackground(new Color(128, 0, 255));
-		btnVerHistorial.setBounds(773, 449, 141, 37);
-		panelDesarrollo.add(btnVerHistorial);
+		DefaultListModel<String> modelDesarrollos = new DefaultListModel<>();
+		JList<String> listDesarrollos = new JList<>(modelDesarrollos);
+		listDesarrollos.setLayoutOrientation(JList.VERTICAL_WRAP);
+		listDesarrollos.setForeground(new Color(128, 0, 255));
+		listDesarrollos.setFont(new Font("Arial", Font.BOLD, 18));
+		listDesarrollos.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, new Color(128, 0, 255), new Color(128, 0, 255), new Color(128, 0, 255), new Color(128, 0, 255)));
+		listDesarrollos.setBackground(new Color(230, 204, 255));
+		listDesarrollos.setBounds(773, 125, 250, 304);
+		panelDesarrollo.add(listDesarrollos);
+
+		// Cargar los desarrollos del curso actual
+		List<Desarrollo> desarrollos = DesarrolloService.obtenerDesarrollosPorCurso(Curso.getId());
+		modelDesarrollos.clear();
+		for (Desarrollo d : desarrollos) {
+		    String texto = d.getFecha().toString();
+		    modelDesarrollos.addElement(texto);
+		}
+
 		
 		JButton btnGuardarDesarrollo = new JButton("Guardar Desarrollo");
+		btnGuardarDesarrollo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				Desarrollo desarrollo = new Desarrollo();
+				java.util.Date fechaSeleccionada = dChooserDesarrollo.getDate();
+				if (fechaSeleccionada == null) {
+				    JOptionPane.showMessageDialog(null, "Por favor, seleccione una fecha.", "Error", JOptionPane.ERROR_MESSAGE);
+				    return;
+				}
+				java.sql.Date fechaClase = new java.sql.Date(fechaSeleccionada.getTime());
+				desarrollo.setCurso_id(Curso.getId());
+				desarrollo.setFecha(fechaClase);
+				desarrollo.setContenido(textDesarrollo.getText());
+				desarrollo.setAutor_id(Docente.getId());
+	
+				if (textDesarrollo.getText().isEmpty()) {
+				    JOptionPane.showMessageDialog(null, "El contenido del desarrollo no puede estar vacío.", "Error", JOptionPane.ERROR_MESSAGE);
+				    return;
+				}
+				try {
+				    Boolean exito = DesarrolloService.guardarDesarrollo(desarrollo);
+				    if (exito) {
+				        JOptionPane.showMessageDialog(null, "Desarrollo guardado con éxito.");
+				        List<Desarrollo> desarrollos = DesarrolloService.obtenerDesarrollosPorCurso(Curso.getId());
+						modelDesarrollos.clear();
+						for (Desarrollo d : desarrollos) {
+						    String texto = d.getFecha().toString();
+						    modelDesarrollos.addElement(texto);
+						}
+				    } else {
+				        JOptionPane.showMessageDialog(null, "Error al guardar el desarrollo.", "Error", JOptionPane.ERROR_MESSAGE);
+				    }
+				} catch (Exception ex) {
+				    JOptionPane.showMessageDialog(null, "Error al conectar con la base de datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				}
+				
+			}
+		});
 		btnGuardarDesarrollo.setForeground(new Color(255, 255, 255));
 		btnGuardarDesarrollo.setBackground(new Color(0, 64, 0));
 		btnGuardarDesarrollo.setFont(new Font("Arial", Font.BOLD, 14));
 		btnGuardarDesarrollo.setBounds(255, 449, 187, 37);
 		panelDesarrollo.add(btnGuardarDesarrollo);
 		
-		JList listDesarrollos = new JList();
-		listDesarrollos.setLayoutOrientation(JList.VERTICAL_WRAP);
-		listDesarrollos.setModel(new AbstractListModel() {
-			String[] values = new String[] {"Clase 5/07", "Clase 26/07", "Clase 31/07", "Clase 1/08"};
-			public int getSize() {
-				return values.length;
-			}
-			public Object getElementAt(int index) {
-				return values[index];
-			}
-		});
-		listDesarrollos.setValueIsAdjusting(true);
-		listDesarrollos.setForeground(new Color(128, 0, 255));
-		listDesarrollos.setFont(new Font("Arial", Font.BOLD, 18));
-		listDesarrollos.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, new Color(128, 0, 255), new Color(128, 0, 255), new Color(128, 0, 255), new Color(128, 0, 255)));
-		listDesarrollos.setBackground(new Color(230, 204, 255));
-		listDesarrollos.setBounds(773, 125, 141, 304);
-		panelDesarrollo.add(listDesarrollos);
 		
 		JButton btnEliminar = new JButton("Eliminar");
+		btnEliminar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String desarrolloSeleccionado = (String) listDesarrollos.getSelectedValue();
+				if (desarrolloSeleccionado == null) {
+				    JOptionPane.showMessageDialog(null, "Por favor, seleccione un desarrollo de la lista.", "Error", JOptionPane.ERROR_MESSAGE);
+				    return;
+				}
+				try {
+					Boolean exito = DesarrolloService.eliminarDesarrolloPorFechaYCurso(desarrolloSeleccionado, Curso.getId());
+				    if (exito) {
+				        JOptionPane.showMessageDialog(null, "Desarrollo eliminado con éxito.");
+				        List<Desarrollo> desarrollos = DesarrolloService.obtenerDesarrollosPorCurso(Curso.getId());
+						modelDesarrollos.clear();
+						for (Desarrollo d : desarrollos) {
+						    String texto = d.getFecha().toString();
+						    modelDesarrollos.addElement(texto);
+						}
+
+				    } else {
+				        JOptionPane.showMessageDialog(null, "Error al eliminar el desarrollo.", "Error", JOptionPane.ERROR_MESSAGE);
+				    }
+				} catch (Exception ex) {
+				    JOptionPane.showMessageDialog(null, "Error al eliminar desarrollo: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			}
+			}
+		});
 		btnEliminar.setForeground(Color.WHITE);
 		btnEliminar.setFont(new Font("Arial", Font.BOLD, 14));
 		btnEliminar.setBackground(new Color(64, 0, 0));
 		btnEliminar.setBounds(452, 449, 187, 37);
 		panelDesarrollo.add(btnEliminar);
-		
-		JDateChooser dChooserDesarrollo = new JDateChooser();
-		dChooserDesarrollo.setBackground(new Color(216, 191, 216));
-		dChooserDesarrollo.setBounds(125, 130, 162, 27);
-		panelDesarrollo.add(dChooserDesarrollo);
+		JButton btnVerHistorial = new JButton("Ver contenido");
+		btnVerHistorial.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String desarrolloSeleccionado = (String) listDesarrollos.getSelectedValue();
+				if (desarrolloSeleccionado == null) {
+				    JOptionPane.showMessageDialog(null, "Por favor, seleccione un desarrollo de la lista.", "Error", JOptionPane.ERROR_MESSAGE);
+				    return;
+				}
+				try {
+					Desarrollo d = DesarrolloService.obtenerDesarrolloPorFechaYCurso(desarrolloSeleccionado, Curso.getId());
+				    if (d != null) {
+				        textDesarrollo.setText(d.getContenido());
+				        dChooserDesarrollo.setDate(d.getFecha());
+				    } else {
+				        JOptionPane.showMessageDialog(null, "No se encontró el desarrollo seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
+				    }
+				} catch (Exception ex) {
+				    JOptionPane.showMessageDialog(null, "Error al obtener desarrollo: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			}
+		}});
+		btnVerHistorial.setFont(new Font("Arial", Font.BOLD, 14));
+		btnVerHistorial.setForeground(new Color(255, 255, 255));
+		btnVerHistorial.setBackground(new Color(128, 0, 255));
+		btnVerHistorial.setBounds(773, 449, 141, 37);
+		panelDesarrollo.add(btnVerHistorial);
 	}
 	
 	private void cargarEstudiantes() {
