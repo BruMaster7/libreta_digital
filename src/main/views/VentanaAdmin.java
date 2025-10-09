@@ -806,24 +806,6 @@ public class VentanaAdmin extends JFrame {
 					String cedulaDocente = txtCiDocenteVinculado.getText().trim().toString();
 					String cursoSeleccionado = cmbSubCurso.getSelectedItem().toString();
 
-					if (cedulaDocente.isEmpty()) {
-						JOptionPane.showMessageDialog(VentanaAdmin.this, "Ingrese la cédula del docente.", "Error",
-								JOptionPane.ERROR_MESSAGE);
-						return;
-					}
-
-					if (cursoSeleccionado.isEmpty()) {
-						JOptionPane.showMessageDialog(VentanaAdmin.this, "Seleccione un curso.", "Error",
-								JOptionPane.ERROR_MESSAGE);
-						return;
-					}
-					// Asegurar que no haya un docente ya vinculado
-					if (!txtVacante.getText().equals("Vacante")) {
-						JOptionPane.showMessageDialog(VentanaAdmin.this,
-								"El curso ya tiene un docente vinculado. Desvinculelo primero.", "Error",
-								JOptionPane.ERROR_MESSAGE);
-						return;
-					}
 
 					Usuario docente = UsuarioService.buscarUsuarioPorCedula(cedulaDocente);
 					if (docente == null) {
