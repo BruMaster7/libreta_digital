@@ -4,6 +4,7 @@ import java.sql.*;
 import java.sql.Date;
 import java.util.*;
 
+import main.config.Conexion;
 import main.model.Asistencia;
 
 public class AsistenciaDAO {
@@ -49,6 +50,27 @@ public class AsistenciaDAO {
             }
         }
         return lista;
+    }
+
+    public static int obtenerFaltasPorEstudianteYCurso(int usuarioId, String nombreCurso) {
+        String sql = """
+            SELECT COUNT(*) AS faltas
+            FROM asistencia a
+            JOIN curso c ON a.curso_id = c.curso_id
+            WHERE a.usuario_id = ? AND c.nombre_curso = ? AND a.estado_asistencia = 'Ausente'
+        """;
+        try (Connection conn = Conexion.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, usuarioId);
+            stmt.setString(2, nombreCurso);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("faltas");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }
 

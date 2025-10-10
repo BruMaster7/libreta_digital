@@ -5,6 +5,7 @@ public class CalificacionDetalle {
 	    private String nombreEvaluacion;
 	    private String tipoEvaluacion;
 	    private float nota;
+		
 		public CalificacionDetalle(String nombreCurso, String nombreEvaluacion, String tipoEvaluacion, float nota) {
 			super();
 			this.nombreCurso = nombreCurso;
@@ -15,6 +16,7 @@ public class CalificacionDetalle {
 		public String getNombreCurso() {
 			return nombreCurso;
 		}
+
 		public void setNombreCurso(String nombreCurso) {
 			this.nombreCurso = nombreCurso;
 		}

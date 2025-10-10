@@ -6,6 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import main.config.Conexion;
 import main.dao.UsuarioDAO;
 import main.model.Usuario;
 
@@ -30,6 +31,10 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class VentanaLogin extends JFrame {
 
@@ -59,6 +64,15 @@ public class VentanaLogin extends JFrame {
 	 * Create the frame.
 	 */
 	public VentanaLogin() {
+        try (Connection conn = Conexion.conectar();
+       	     Statement stmt = conn.createStatement();
+       	     ResultSet rs = stmt.executeQuery("SELECT current_database()")) {
+       	    if (rs.next()) {
+       	        System.out.println("Base de datos conectada: " + rs.getString(1));
+       	    }
+       	} catch (SQLException e) {
+       	    e.printStackTrace();
+       	}
 		setLocationByPlatform(true);
 		setUndecorated(true);
 		setResizable(false);
@@ -78,7 +92,7 @@ public class VentanaLogin extends JFrame {
 		
 		JLabel lblImagen = new JLabel("");
 		lblImagen.setBounds(244, 5, 296, 225);
-		lblImagen.setIcon(new ImageIcon(VentanaLogin.class.getResource("/main/images/Docente_Login.png")));
+		lblImagen.setIcon(new ImageIcon(VentanaLogin.class.getResource("/resources/Docente_Login.png")));
 		panel.add(lblImagen);
 		
 		JLabel lblTitulo = new JLabel("INICIAR SESIÓN");

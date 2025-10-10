@@ -9,6 +9,7 @@ import javax.swing.JTree;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import main.dao.AsistenciaDAO;
 import main.dao.CalificacionDAO;
 import main.model.CalificacionDetalle;
 import main.model.Usuario;
@@ -182,13 +183,14 @@ private void cargarBoletin(int estudianteId) {
     );
 
     for (BoletinCurso bc : boletinMap.values()) {
+        int faltas = AsistenciaDAO.obtenerFaltasPorEstudianteYCurso(estudianteId, bc.getAsignatura());
         modelo.addRow(new Object[]{
             bc.getAsignatura(),
             bc.getActividadesStr(),
             bc.getPrimerParcial() != null ? bc.getPrimerParcial() : "-",
             bc.getSegundoParcial() != null ? bc.getSegundoParcial() : "-",
             bc.getPromedio(),
-            "-" 
+            faltas
         });
     }
 

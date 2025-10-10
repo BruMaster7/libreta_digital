@@ -601,6 +601,7 @@ public class VentanaDocentes extends JFrame {
 		                if (estudiante != null) {
 		                    // Guardamos la calificación
 		                	boolean exito = CalificacionService.guardarCalificacion(estudiante.getId(), ev.getId(), nota);
+		                	System.out.println("Guardando nota para: " + estudiante.getNombre() + " " + estudiante.getApellido() + " - Nota: " + nota);
 		                }
 		            }
 
