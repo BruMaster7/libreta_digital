@@ -296,7 +296,7 @@ public class VentanaDocentes extends JFrame {
 		panelEvaluaciones.add(dChooserEvaluacion);
 		
 		JComboBox comboBox_1 = new JComboBox();
-		comboBox_1.setModel(new DefaultComboBoxModel(new String[] {"Actividad", "Oral", "Primer parcial", "Segundo parcial"}));
+		comboBox_1.setModel(new DefaultComboBoxModel(new String[] {"Actividad", "Oral", "Parcial1", "Parcial2"}));
 		comboBox_1.setBackground(new Color(216, 191, 216));
 		comboBox_1.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 		comboBox_1.setBounds(137, 228, 138, 22);

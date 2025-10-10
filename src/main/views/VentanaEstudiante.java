@@ -182,7 +182,7 @@ private void cargarBoletin(int estudianteId) {
         new String[]{"Asignatura", "Actividades", "1er Parcial", "2do Parcial", "Promedio", "Faltas"}, 0
     );
 
-    for (BoletinCurso bc : boletinMap.values()) {
+    for (BoletinCurso bc : boletinList) { // <-- usa la lista ordenada
         int faltas = AsistenciaDAO.obtenerFaltasPorEstudianteYCurso(estudianteId, bc.getAsignatura());
         modelo.addRow(new Object[]{
             bc.getAsignatura(),
