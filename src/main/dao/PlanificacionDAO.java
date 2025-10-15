@@ -1,6 +1,7 @@
 package main.dao;
 
 import main.model.Planificacion;
+
 import main.config.Conexion;
 import main.model.CalificacionDetalle;
 import main.model.Evaluacion;
@@ -11,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 public class PlanificacionDAO {
@@ -23,8 +25,7 @@ public class PlanificacionDAO {
 	        stmt.setInt(1, plani.getCurso_id());
 	        stmt.setString(2, plani.getHipervinculo());
 
-	        // OJO: convertir java.util.Date -> java.sql.Date
-	        java.sql.Date fechaSQL = new java.sql.Date(plani.getFecha().getTime());
+	        Date fechaSQL = new java.sql.Date(plani.getFecha().getTime());
 	        stmt.setDate(3, fechaSQL);
 
 	        stmt.setInt(4, plani.getAutor_id());

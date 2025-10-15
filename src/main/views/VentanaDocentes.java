@@ -96,6 +96,7 @@ public class VentanaDocentes extends JFrame {
     private UsuarioCursoDAO usuarioCursoDAO;
     private CalificacionDAO calificacionDAO;
     private List<Usuario> estudiantesDelCurso;
+    private Planificacion planificacion;
     private JDateChooser dChooserFechaCargada;
     private JDateChooser dChooserFechaGuardada;
     private JTable tableEvaluar;
@@ -647,10 +648,13 @@ public class VentanaDocentes extends JFrame {
 		panelPlanificaciones.add(lblSubirPlanif);
 		
 		textPlanifAnual = new JTextField();
+		planificacion = PlanificacionService.obtenerPlanificacion(Curso.getId(), Docente.getId());
+		textPlanifAnual.setText(planificacion.getHipervinculo());
 		textPlanifAnual.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 		textPlanifAnual.setBounds(229, 190, 477, 29);
 		panelPlanificaciones.add(textPlanifAnual);
 		textPlanifAnual.setColumns(10);
+		
 		
 		JButton btnGuardarPlanif = new JButton("Guardar Planificación");
 		btnGuardarPlanif.addActionListener(new ActionListener() {

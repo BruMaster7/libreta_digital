@@ -14,4 +14,9 @@ public class PlanificacionService {
 		}
 		return PlanificacionDAO.guardarPlanificacionAnual(plani);
 	}
+	
+	public static Planificacion obtenerPlanificacion(int cursoId, int autorId) {
+		Planificacion existente = PlanificacionDAO.obtenerPlanificacionPorCursoYdocente(cursoId, autorId);
+		return existente;
+	} 
 }
