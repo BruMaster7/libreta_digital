@@ -26,6 +26,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
@@ -45,6 +46,8 @@ import javax.swing.AbstractListModel;
 import javax.swing.JTextArea;
 import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
+import javax.swing.ComboBoxModel;
+
 import java.awt.Toolkit;
 import javax.swing.UIManager;
 import java.awt.event.ActionListener;
@@ -93,6 +96,7 @@ public class VentanaAdmin extends JFrame {
 	private JLabel txtDescripAltaCurso;
 	private JComboBox cmbEstadoCurso;
 	private JLabel txtDescripcion;
+	private List<String> cursosNombre;
 
 	/**
 	 * Launch the application.
@@ -1522,11 +1526,15 @@ public class VentanaAdmin extends JFrame {
 		lblSeleccionCursoVisado.setFont(new Font("Segoe UI", Font.BOLD, 20));
 		tabSuperior.add(lblSeleccionCursoVisado);
 
-		JComboBox comboBoxCursosVisado = new JComboBox();
+		JComboBox<String> comboBoxCursosVisado = new JComboBox();
 		comboBoxCursosVisado.setForeground(new Color(128, 0, 255));
 		comboBoxCursosVisado.setBackground(new Color(255, 255, 255));
-		comboBoxCursosVisado.setModel(new DefaultComboBoxModel(
-				new String[] { "Informatica 9º3", "Informatica 9º4", "Ingles 7º3", "Ingles 8º3" }));
+		List<Curso> todosLosCursos = CursoService.listarTodosLosCursos();
+		cursosNombre = new ArrayList<>();
+		for (Curso curso: todosLosCursos) {
+			this.cursosNombre.add(curso.getNombre_curso());
+		}
+		comboBoxCursosVisado.setModel(new DefaultComboBoxModel<>(this.cursosNombre.toArray(new String[0])));
 		comboBoxCursosVisado.setFont(new Font("Segoe UI", Font.PLAIN, 16));
 		tabSuperior.add(comboBoxCursosVisado);
 
