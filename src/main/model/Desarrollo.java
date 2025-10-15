@@ -1,10 +1,12 @@
 package main.model;
 
+import java.util.Date;
+
 public class Desarrollo {
 	private int desarrollo_id;
 	private int curso_id;
 	private String contenido;
-	private  java.util.Date Fecha;
+	private Date Fecha;
 	private int autor_id;
 	
 	public Desarrollo() {

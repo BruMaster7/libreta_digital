@@ -74,6 +74,10 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerDateModel;
 import java.util.Calendar;
 import com.toedter.calendar.JDateChooser;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class VentanaDocentes extends JFrame {
 
@@ -98,6 +102,7 @@ public class VentanaDocentes extends JFrame {
 	private JDateChooser dChooserDesarrollo;
 
     private JTextField txtTituloEvaluacion;	// Clase interna para el resumen del estudiante en el curso
+    private final Action action = new SwingAction();
     public class ResumenEstudianteCurso {
         private String documento;
         private String nombre;
@@ -257,6 +262,19 @@ public class VentanaDocentes extends JFrame {
 		btnCerrarPromedios_1.setFont(new Font("Arial", Font.BOLD, 14));
 		btnCerrarPromedios_1.setBackground(new Color(128, 0, 255));
 		panelBtnEstudiantes.add(btnCerrarPromedios_1);
+		
+		JButton btnActualizar = new JButton("ACTUALIZAR");
+		btnActualizar.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				cargarEstudiantes();
+			}
+		});
+		btnActualizar.setForeground(Color.WHITE);
+		btnActualizar.setFont(new Font("Arial", Font.BOLD, 14));
+		btnActualizar.setBackground(new Color(128, 0, 255));
+		btnActualizar.setBounds(696, 5, 165, 25);
+		panelBtnEstudiantes.add(btnActualizar);
 		
 		JPanel tabEvaluacion = new JPanel();
 		tabbedPane.addTab("Evaluación", null, tabEvaluacion, null);
@@ -1098,6 +1116,10 @@ public class VentanaDocentes extends JFrame {
                     }
                 }
 
+                // Consultar faltas reales
+                int faltas = AsistenciaDAO.obtenerFaltasPorEstudianteYCurso(estudiante.getUsuarioId(), Curso.getNombre_curso());
+                resumen.setFaltas(faltas);
+
                 // Añadir fila a la tabla
                 model.addRow(new Object[]{
                     resumen.getDocumento(),
@@ -1107,7 +1129,7 @@ public class VentanaDocentes extends JFrame {
                     resumen.getPrimerParcial(),
                     resumen.getSegundoParcial(),
                     resumen.getPromedio(),
-                    resumen.getFaltas() // Puede ser 0 o null temporalmente
+                    resumen.getFaltas()
                 });
             }
         } catch (Exception e) {
@@ -1183,5 +1205,13 @@ public class VentanaDocentes extends JFrame {
 	    } catch (SQLException ex) {
 	        JOptionPane.showMessageDialog(this, "Error al cargar la lista: " + ex.getMessage());
 	    }
+	}
+	private class SwingAction extends AbstractAction {
+		public SwingAction() {
+			putValue(NAME, "SwingAction");
+			putValue(SHORT_DESCRIPTION, "Some short description");
+		}
+		public void actionPerformed(ActionEvent e) {
+		}
 	}
 }
