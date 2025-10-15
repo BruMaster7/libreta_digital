@@ -31,6 +31,7 @@ import java.util.HashMap;
 
 
 import main.dao.CursoDAO;
+import main.dao.UsuarioCursoDAO;
 import main.dao.UsuarioDAO;
 import main.model.Curso;
 import main.model.Rama;
@@ -55,6 +56,8 @@ import java.sql.Date;
 import java.awt.event.ActionEvent;
 import javax.swing.JPasswordField;
 import com.toedter.calendar.JDateChooser;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 
 public class VentanaAdmin extends JFrame {
@@ -1539,6 +1542,7 @@ public class VentanaAdmin extends JFrame {
 		tabSuperior.add(comboBoxCursosVisado);
 
 		JButton btnCargarVisado = new JButton("Cargar información");
+
 		btnCargarVisado.setForeground(new Color(0, 0, 0));
 		btnCargarVisado.setFont(new Font("Segoe UI Black", Font.BOLD, 14));
 		btnCargarVisado.setBackground(new Color(255, 255, 255));
@@ -1731,6 +1735,18 @@ public class VentanaAdmin extends JFrame {
 		lblPromediosVisado.setFont(new Font("Segoe UI", Font.BOLD, 14));
 		lblPromediosVisado.setBounds(500, 537, 99, 19);
 		tabVisadoAdm.add(lblPromediosVisado);
+		
+		btnCargarVisado.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				String nombreCurso = comboBoxCursosVisado.getSelectedItem().toString();
+				System.out.println(nombreCurso);
+				Curso cursoSeleccionado = CursoService.buscarCursoPorNombre(nombreCurso);
+				Usuario docenteSeleccionado = UsuarioCursoDAO.obtenerDocentePorCurso(cursoSeleccionado.getId());
+				lblDocenteVisadoDinamic.setText(docenteSeleccionado.getNombre() + " " + docenteSeleccionado.getApellido());
+				lblCiVisadoDinamic.setText(docenteSeleccionado.getDocumento());
+			}
+		});
 
 	}
 }
