@@ -34,9 +34,11 @@ import main.dao.CursoDAO;
 import main.dao.UsuarioCursoDAO;
 import main.dao.UsuarioDAO;
 import main.model.Curso;
+import main.model.Planificacion;
 import main.model.Rama;
 import main.model.Usuario;
 import main.services.CursoService;
+import main.services.PlanificacionService;
 import main.services.UsuarioService;
 import main.services.RamaService;
 import javax.swing.JList;
@@ -1739,12 +1741,23 @@ public class VentanaAdmin extends JFrame {
 		btnCargarVisado.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				
+				// CARGAR DOCENTE Y SU CEDULA/DOCUMENTO
 				String nombreCurso = comboBoxCursosVisado.getSelectedItem().toString();
 				System.out.println(nombreCurso);
 				Curso cursoSeleccionado = CursoService.buscarCursoPorNombre(nombreCurso);
 				Usuario docenteSeleccionado = UsuarioCursoDAO.obtenerDocentePorCurso(cursoSeleccionado.getId());
 				lblDocenteVisadoDinamic.setText(docenteSeleccionado.getNombre() + " " + docenteSeleccionado.getApellido());
 				lblCiVisadoDinamic.setText(docenteSeleccionado.getDocumento());
+				
+				// CARGAR PLANIFICACION
+				Planificacion planificacion = PlanificacionService.obtenerPlanificacion(cursoSeleccionado.getId(), docenteSeleccionado.getId());
+				lblPlanifAnualDinamic.setText(planificacion.getHipervinculo());
+				
+				// CARGAR ESTUDIANTES
+				
+				
+				
 			}
 		});
 
