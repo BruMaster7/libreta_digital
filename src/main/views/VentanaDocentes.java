@@ -1150,8 +1150,7 @@ public class VentanaDocentes extends JFrame {
 	        return;
 	    }
 
-	    // Convertimos java.util.Date -> java.sql.Date
-	    java.sql.Date fechaClase = new java.sql.Date(fechaSeleccionada.getTime());
+	    Date fechaClase = new Date(fechaSeleccionada.getTime());
 
 	    try {
 	        DefaultTableModel model = (DefaultTableModel) tableLista.getModel();

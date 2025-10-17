@@ -26,13 +26,17 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
+import main.config.Conexion;
+import main.dao.AsistenciaDAO;
+import main.dao.CalificacionDAO;
 import main.dao.CursoDAO;
 import main.dao.UsuarioCursoDAO;
 import main.dao.UsuarioDAO;
+import main.model.CalificacionDetalle;
 import main.model.Curso;
 import main.model.Planificacion;
 import main.model.Rama;
@@ -102,6 +106,9 @@ public class VentanaAdmin extends JFrame {
 	private JComboBox cmbEstadoCurso;
 	private JLabel txtDescripcion;
 	private List<String> cursosNombre;
+    private UsuarioCursoDAO usuarioCursoDAO;
+    private CalificacionDAO calificacionDAO;
+	private static Curso Curso;
 
 	/**
 	 * Launch the application.
@@ -123,6 +130,8 @@ public class VentanaAdmin extends JFrame {
 	 * Create the frame.
 	 */
 	public VentanaAdmin(Usuario Administrador) {
+		this.usuarioCursoDAO = new UsuarioCursoDAO(Conexion.conectar());
+	    this.calificacionDAO = new CalificacionDAO();
 		setIconImage(Toolkit.getDefaultToolkit().getImage(VentanaAdmin.class.getResource("/resources/Libreta.png")));
 		setMinimumSize(new Dimension(1024, 649));
 		setSize(new Dimension(1082, 699));
@@ -1738,6 +1747,8 @@ public class VentanaAdmin extends JFrame {
 		lblPromediosVisado.setBounds(500, 537, 99, 19);
 		tabVisadoAdm.add(lblPromediosVisado);
 		
+		
+		
 		btnCargarVisado.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -1755,6 +1766,7 @@ public class VentanaAdmin extends JFrame {
 				lblPlanifAnualDinamic.setText(planificacion.getHipervinculo());
 				
 				// CARGAR ESTUDIANTES
+				cargarEstudiantes(cursoSeleccionado);
 				
 				
 				
@@ -1762,4 +1774,107 @@ public class VentanaAdmin extends JFrame {
 		});
 
 	}
+	
+	class ResumenEstudianteCurso {
+        private String documento;
+        private List<Double> actividades = new ArrayList<>();
+        private Double primerParcial;
+        private Double segundoParcial;
+        private int faltas;
+
+        public ResumenEstudianteCurso(String documento, String nombre, String apellido) {
+            this.documento = documento;
+
+        }
+
+        // Getters y setters
+        public String getDocumento() { return documento; }
+        public List<Double> getActividades() { return actividades; }
+        public Double getPrimerParcial() { return primerParcial; }
+        public void setPrimerParcial(Double primerParcial) { this.primerParcial = primerParcial; }
+        public Double getSegundoParcial() { return segundoParcial; }
+        public void setSegundoParcial(Double segundoParcial) { this.segundoParcial = segundoParcial; }
+        public int getFaltas() { return faltas; }
+        public void setFaltas(int faltas) { this.faltas = faltas; }
+        
+        public String getActividadesStr() {
+            if (actividades.isEmpty()) return "-";
+            return actividades.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+        }
+        
+        public Double getPromedio() {
+            double suma = 0;
+            int count = 0;
+            
+            if (primerParcial != null) {
+                suma += primerParcial;
+                count++;
+            }
+            if (segundoParcial != null) {
+                suma += segundoParcial;
+                count++;
+            }
+            for (Double act : actividades) {
+                suma += act;
+                count++;
+            }
+            
+            return count > 0 ? suma / count : 0.0;
+        }
+    }
+	
+	private void cargarEstudiantes(Curso curso) {
+        try {
+			// Obtener estudiantes activos del curso
+            List<Usuario> estudiantes = UsuarioCursoDAO.obtenerEstudiantesActivosPorCurso(curso.getId());
+            DefaultTableModel model = (DefaultTableModel) tableEstudiantesVisado.getModel();
+            model.setRowCount(0); // Limpiar tabla existente
+
+            for (Usuario estudiante : estudiantes) {
+                // Obtener calificaciones del estudiante en este curso
+                List<CalificacionDetalle> calificaciones = 
+                    calificacionDAO.obtenerCalificacionesPorEstudianteYCurso(
+                        estudiante.getUsuarioId(), curso.getId());
+
+                // Crear resumen del estudiante
+                ResumenEstudianteCurso resumen = new ResumenEstudianteCurso(
+                    estudiante.getDocumento(),
+                    estudiante.getNombre(),
+                    estudiante.getApellido()
+                );
+
+                // Procesar calificaciones
+                for (CalificacionDetalle calificacion : calificaciones) {
+                    String tipo = calificacion.getTipoEvaluacion();
+                    double nota = calificacion.getNota();
+
+                    if ("Actividad".equalsIgnoreCase(tipo)) {
+                        resumen.getActividades().add(nota);
+                    } else if ("Parcial1".equalsIgnoreCase(tipo)) {
+                        resumen.setPrimerParcial(nota);
+                    } else if ("Parcial2".equalsIgnoreCase(tipo)) {
+                        resumen.setSegundoParcial(nota);
+                    }
+                }
+
+                // Consultar faltas reales
+                int faltas = AsistenciaDAO.obtenerFaltasPorEstudianteYCurso(estudiante.getUsuarioId(), curso.getNombre_curso());
+                resumen.setFaltas(faltas);
+
+                // Añadir fila a la tabla
+                model.addRow(new Object[]{
+                    resumen.getDocumento(),
+                    resumen.getActividadesStr(),
+                    resumen.getPrimerParcial(),
+                    resumen.getSegundoParcial(),
+                    resumen.getPromedio(),
+                    resumen.getFaltas()
+                });
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar estudiantes: " + e.getMessage());
+        }
+    }
 }
