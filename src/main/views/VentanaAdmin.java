@@ -18,6 +18,7 @@ import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.border.MatteBorder;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
@@ -38,10 +39,12 @@ import main.dao.UsuarioCursoDAO;
 import main.dao.UsuarioDAO;
 import main.model.CalificacionDetalle;
 import main.model.Curso;
+import main.model.Desarrollo;
 import main.model.Planificacion;
 import main.model.Rama;
 import main.model.Usuario;
 import main.services.CursoService;
+import main.services.DesarrolloService;
 import main.services.PlanificacionService;
 import main.services.UsuarioService;
 import main.services.RamaService;
@@ -1490,6 +1493,7 @@ public class VentanaAdmin extends JFrame {
 					lblEstudiantesVinculadoBaja.setText(String.valueOf(estudiantes.size()));
 
 				} catch (Exception ex) {
+
 					JOptionPane.showMessageDialog(VentanaAdmin.this, "Error: " + ex.getMessage(), "Error",
 							JOptionPane.ERROR_MESSAGE);
 				}
@@ -1634,21 +1638,10 @@ public class VentanaAdmin extends JFrame {
 		JScrollPane scrollPaneDesarrolloVisado = new JScrollPane();
 		scrollPaneDesarrolloVisado.setBounds(10, 237, 146, 180);
 		tabVisadoAdm.add(scrollPaneDesarrolloVisado);
-
-		JList listDesarrolloVisado = new JList();
+		
+		DefaultListModel<String> modelDesarrollos = new DefaultListModel<>();
+		JList<String> listDesarrolloVisado = new JList<>(modelDesarrollos);
 		scrollPaneDesarrolloVisado.setViewportView(listDesarrolloVisado);
-		listDesarrolloVisado.setModel(new AbstractListModel() {
-			String[] values = new String[] { "1/08", "31/07", "22/07", "8/08", "Prueba2", "Prueba3", "Prueba",
-					"Prueba4", "Prueba5" };
-
-			public int getSize() {
-				return values.length;
-			}
-
-			public Object getElementAt(int index) {
-				return values[index];
-			}
-		});
 
 		listDesarrolloVisado.setValueIsAdjusting(true);
 		listDesarrolloVisado.setForeground(new Color(128, 0, 255));
@@ -1660,7 +1653,7 @@ public class VentanaAdmin extends JFrame {
 		JTextArea txtrDesarrolloVisado = new JTextArea();
 		txtrDesarrolloVisado.setLineWrap(true);
 		txtrDesarrolloVisado.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-		txtrDesarrolloVisado.setText("aaa");
+		txtrDesarrolloVisado.setText("");
 		txtrDesarrolloVisado.setBounds(162, 235, 266, 151);
 		tabVisadoAdm.add(txtrDesarrolloVisado);
 
@@ -1714,32 +1707,24 @@ public class VentanaAdmin extends JFrame {
 		rdbtnPromediosIVisado.setBounds(674, 537, 98, 23);
 		tabVisadoAdm.add(rdbtnPromediosIVisado);
 
-		JLabel lblEvSemestralVisado = new JLabel("1ºer Evaluación semestral:");
+		JLabel lblEvSemestralVisado = new JLabel("1ºer Evaluación semestral");
 		lblEvSemestralVisado.setFont(new Font("Segoe UI", Font.BOLD, 14));
 		lblEvSemestralVisado.setBounds(10, 472, 185, 20);
 		tabVisadoAdm.add(lblEvSemestralVisado);
 
-		JLabel lblEvSemestral2Visado = new JLabel("2ºda Evaluación semestral:");
+		JLabel lblEvSemestral2Visado = new JLabel("2ºda Evaluación semestral");
 		lblEvSemestral2Visado.setFont(new Font("Segoe UI", Font.BOLD, 14));
 		lblEvSemestral2Visado.setBounds(8, 513, 185, 20);
 		tabVisadoAdm.add(lblEvSemestral2Visado);
 
-		JLabel lblEvSemestralDinamicVisado = new JLabel("-");
-		lblEvSemestralDinamicVisado.setBounds(190, 477, 191, 14);
-		tabVisadoAdm.add(lblEvSemestralDinamicVisado);
-
-		JLabel lblEvSemestral2DinamicVisado = new JLabel("-");
-		lblEvSemestral2DinamicVisado.setBounds(188, 516, 156, 14);
-		tabVisadoAdm.add(lblEvSemestral2DinamicVisado);
-
 		JRadioButton rdbtnEvSemestralCVisado = new JRadioButton("Completo");
 		buttonGroup_2.add(rdbtnEvSemestralCVisado);
-		rdbtnEvSemestralCVisado.setBounds(54, 537, 85, 23);
+		rdbtnEvSemestralCVisado.setBounds(189, 499, 85, 23);
 		tabVisadoAdm.add(rdbtnEvSemestralCVisado);
 
 		JRadioButton rdbtnEvSemestralIVisado = new JRadioButton("Incompleto\r\n");
 		buttonGroup_2.add(rdbtnEvSemestralIVisado);
-		rdbtnEvSemestralIVisado.setBounds(149, 537, 98, 23);
+		rdbtnEvSemestralIVisado.setBounds(276, 499, 98, 23);
 		tabVisadoAdm.add(rdbtnEvSemestralIVisado);
 
 		JLabel lblPromediosVisado = new JLabel("Promedios:");
@@ -1768,8 +1753,51 @@ public class VentanaAdmin extends JFrame {
 				// CARGAR ESTUDIANTES
 				cargarEstudiantes(cursoSeleccionado);
 				
+				// CARGAR DESARROLLOS DEL CURSO SELECCIONADO				
+				List<Desarrollo> desarrollos = DesarrolloService.obtenerDesarrollosPorCurso(cursoSeleccionado.getId());
+				modelDesarrollos.clear();
+				listDesarrolloVisado.clearSelection();
+				for (Desarrollo d : desarrollos) {
+				    String texto = d.getFecha().toString();
+				    System.out.println(texto);
+				    modelDesarrollos.addElement(texto);
+				}
 				
-				
+				// Agregar MouseListener al JList para detectar clicks
+				listDesarrolloVisado.addMouseListener(new MouseAdapter() {
+				    @Override
+				    public void mouseClicked(MouseEvent e) {
+				        try {
+				            // Obtener el índice seleccionado
+				            int index = listDesarrolloVisado.getSelectedIndex();
+				            if (index != -1) {
+				                // Obtener la fecha seleccionada
+				                String fechaSeleccionada = listDesarrolloVisado.getSelectedValue();
+				                
+				                // Obtener el curso seleccionado
+				                String nombreCurso = comboBoxCursosVisado.getSelectedItem().toString();
+				                Curso cursoSeleccionado = CursoService.buscarCursoPorNombre(nombreCurso);
+				                
+				                // Buscar el desarrollo correspondiente a la fecha
+				                Desarrollo desarrolloSeleccionado = null;
+				                for (Desarrollo d : desarrollos) {
+				                    if (d.getFecha().toString().equals(fechaSeleccionada)) {
+				                        desarrolloSeleccionado = d;
+				                        break;
+				                    }
+				                }
+				                
+				                // Mostrar la descripción en el TextArea
+				                if (desarrolloSeleccionado != null) {
+				                    txtrDesarrolloVisado.setText(desarrolloSeleccionado.getContenido());
+				                }
+				            }
+				        } catch (Exception ex) {
+				            JOptionPane.showMessageDialog(VentanaAdmin.this, 
+				                "Error al cargar la descripción: " + ex.getMessage());
+				        }
+				    }
+				});
 			}
 		});
 
