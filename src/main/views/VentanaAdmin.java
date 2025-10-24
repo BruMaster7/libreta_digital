@@ -1863,7 +1863,6 @@ public class VentanaAdmin extends JFrame {
 					
 					// Obtener el ID del administrador actual (usuario logueado)
 					// Asumiendo que tienes una variable que guarda el usuario actual
-					int idAdministrador = 1; // TODO: Reemplazar con el ID real del usuario logueado
 					
 					// Obtener la fecha y hora actual
 					java.sql.Timestamp fechaActual = new java.sql.Timestamp(System.currentTimeMillis());
@@ -1877,6 +1876,8 @@ public class VentanaAdmin extends JFrame {
 					
 					String nombreCurso = comboBoxCursosVisado.getSelectedItem().toString();
 					Curso cursoSeleccionado = CursoService.buscarCursoPorNombre(nombreCurso);
+					Usuario docenteSeleccionado = UsuarioCursoDAO.obtenerDocentePorCurso(cursoSeleccionado.getId());
+					int idAdministrador = docenteSeleccionado.getId();
 					int cursoId = cursoSeleccionado.getId();
 					
 					// Crear el objeto Visado con todos los datos
