@@ -48,6 +48,8 @@ import main.services.DesarrolloService;
 import main.services.PlanificacionService;
 import main.services.UsuarioService;
 import main.services.RamaService;
+import main.services.VisadoService;
+import main.model.Visado;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.border.SoftBevelBorder;
@@ -1798,6 +1800,130 @@ public class VentanaAdmin extends JFrame {
 				        }
 				    }
 				});
+			}
+		});
+
+		// ===== EVENTO DEL BOTÓN GUARDAR VISADO =====
+		btnGuardarVisado.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					// VALIDACIÓN 1: Verificar que hay un curso seleccionado
+					if (comboBoxCursosVisado.getSelectedItem() == null) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor seleccione un curso antes de guardar el visado.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// VALIDACIÓN 2: Verificar que hay información del docente cargada
+					// (El docente se carga automáticamente cuando se selecciona un curso)
+					if (lblDocenteVisadoDinamic.getText().equals("-")) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor cargue la información del curso primero para obtener los datos del docente.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// VALIDACIÓN 3: Verificar que todos los radio buttons estén seleccionados
+					// Planificación anual
+					if (!rdbtnPlanifAnualCVisado.isSelected() && !rdbtnPlanifAnualIVisado.isSelected()) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor seleccione si la Planificación anual está Completa o Incompleta.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// Desarrollo
+					if (!rdbtnDesarrolloCVisado.isSelected() && !rdbtnDesarrolloIVisado.isSelected()) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor seleccione si el Desarrollo está Completo o Incompleto.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// Evaluación semestral
+					if (!rdbtnEvSemestralCVisado.isSelected() && !rdbtnEvSemestralIVisado.isSelected()) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor seleccione si la Evaluación semestral está Completa o Incompleta.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// Promedios
+					if (!rdbtnPromediosCVisado.isSelected() && !rdbtnPromediosIVisado.isSelected()) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor seleccione si los Promedios están Completos o Incompletos.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// Si llegamos aquí, todas las validaciones pasaron
+					// Ahora obtenemos los datos necesarios para crear el visado
+					
+					// Obtener el ID del administrador actual (usuario logueado)
+					// Asumiendo que tienes una variable que guarda el usuario actual
+					int idAdministrador = 1; // TODO: Reemplazar con el ID real del usuario logueado
+					
+					// Obtener la fecha y hora actual
+					java.sql.Timestamp fechaActual = new java.sql.Timestamp(System.currentTimeMillis());
+					
+					// Obtener los valores booleanos de los radio buttons
+					// true = Completo, false = Incompleto
+					boolean planificacionCompleta = rdbtnPlanifAnualCVisado.isSelected();
+					boolean desarrolloCompleto = rdbtnDesarrolloCVisado.isSelected();
+					boolean evaluacionCompleta = rdbtnEvSemestralCVisado.isSelected();
+					boolean promediosCompletos = rdbtnPromediosCVisado.isSelected();
+					
+					String nombreCurso = comboBoxCursosVisado.getSelectedItem().toString();
+					Curso cursoSeleccionado = CursoService.buscarCursoPorNombre(nombreCurso);
+					int cursoId = cursoSeleccionado.getId();
+					
+					// Crear el objeto Visado con todos los datos
+					Visado nuevoVisado = new Visado(
+						idAdministrador,           // ID del administrador
+						fechaActual,               // Fecha y hora actual
+						planificacionCompleta,     // Estado de planificación
+						evaluacionCompleta,        // Estado de parciales/evaluaciones
+						desarrolloCompleto,        // Estado de desarrollo
+						promediosCompletos,        // Estado de promedios
+						cursoId					   // Curso ID
+					);
+					
+					// Intentar guardar el visado usando el servicio
+					boolean guardadoExitoso = VisadoService.crearVisado(nuevoVisado);
+					
+					if (guardadoExitoso) {
+						// Mostrar mensaje de éxito
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"¡Visado guardado exitosamente!\n\n" +
+							"Fecha: " + fechaActual.toString() + "\n" +
+							"Planificación: " + (planificacionCompleta ? "Completa" : "Incompleta") + "\n" +
+							"Desarrollo: " + (desarrolloCompleto ? "Completo" : "Incompleto") + "\n" +
+							"Evaluación: " + (evaluacionCompleta ? "Completa" : "Incompleta") + "\n" +
+							"Promedios: " + (promediosCompletos ? "Completos" : "Incompletos"), 
+							"Visado Guardado", JOptionPane.INFORMATION_MESSAGE);
+						
+						// Limpiar los radio buttons después del guardado exitoso
+						buttonGroup.clearSelection();
+						buttonGroup_1.clearSelection();
+						buttonGroup_2.clearSelection();
+						buttonGroup_3.clearSelection();
+						
+					} else {
+						// Mostrar mensaje de error
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Error al guardar el visado. Por favor intente nuevamente.", 
+							"Error", JOptionPane.ERROR_MESSAGE);
+					}
+					
+				} catch (Exception ex) {
+					// Capturar cualquier error inesperado
+					JOptionPane.showMessageDialog(VentanaAdmin.this, 
+						"Error inesperado al guardar el visado: " + ex.getMessage(), 
+						"Error", JOptionPane.ERROR_MESSAGE);
+					ex.printStackTrace(); // Para debugging
+				}
 			}
 		});
 
