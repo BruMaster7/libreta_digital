@@ -1,0 +1,2 @@
+Main-Class: main.views.VentanaLogin
+Class-Path: lib/dotenv-java-2.3.2.jar lib/jcalendar-1.4.jar lib/jgoodies-common-1.2.0.jar lib/jgoodies-looks-2.4.1.jar lib/material-ui-swing-1.1.2.jar lib/postgresql-42.7.7.jar
