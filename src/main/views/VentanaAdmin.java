@@ -18,6 +18,7 @@ import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.border.MatteBorder;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
@@ -26,17 +27,29 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
 import java.util.HashMap;
 
-
+import main.config.Conexion;
+import main.dao.AsistenciaDAO;
+import main.dao.CalificacionDAO;
 import main.dao.CursoDAO;
+import main.dao.UsuarioCursoDAO;
 import main.dao.UsuarioDAO;
+import main.model.CalificacionDetalle;
 import main.model.Curso;
+import main.model.Desarrollo;
+import main.model.Planificacion;
 import main.model.Rama;
 import main.model.Usuario;
 import main.services.CursoService;
+import main.services.DesarrolloService;
+import main.services.PlanificacionService;
 import main.services.UsuarioService;
 import main.services.RamaService;
+import main.services.VisadoService;
+import main.model.Visado;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.border.SoftBevelBorder;
@@ -45,6 +58,8 @@ import javax.swing.AbstractListModel;
 import javax.swing.JTextArea;
 import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
+import javax.swing.ComboBoxModel;
+
 import java.awt.Toolkit;
 import javax.swing.UIManager;
 import java.awt.event.ActionListener;
@@ -52,6 +67,8 @@ import java.sql.Date;
 import java.awt.event.ActionEvent;
 import javax.swing.JPasswordField;
 import com.toedter.calendar.JDateChooser;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 
 public class VentanaAdmin extends JFrame {
@@ -93,6 +110,10 @@ public class VentanaAdmin extends JFrame {
 	private JLabel txtDescripAltaCurso;
 	private JComboBox cmbEstadoCurso;
 	private JLabel txtDescripcion;
+	private List<String> cursosNombre;
+    private UsuarioCursoDAO usuarioCursoDAO;
+    private CalificacionDAO calificacionDAO;
+	private static Curso Curso;
 
 	/**
 	 * Launch the application.
@@ -114,6 +135,8 @@ public class VentanaAdmin extends JFrame {
 	 * Create the frame.
 	 */
 	public VentanaAdmin(Usuario Administrador) {
+		this.usuarioCursoDAO = new UsuarioCursoDAO(Conexion.conectar());
+	    this.calificacionDAO = new CalificacionDAO();
 		setIconImage(Toolkit.getDefaultToolkit().getImage(VentanaAdmin.class.getResource("/resources/Libreta.png")));
 		setMinimumSize(new Dimension(1024, 649));
 		setSize(new Dimension(1082, 699));
@@ -1472,6 +1495,7 @@ public class VentanaAdmin extends JFrame {
 					lblEstudiantesVinculadoBaja.setText(String.valueOf(estudiantes.size()));
 
 				} catch (Exception ex) {
+
 					JOptionPane.showMessageDialog(VentanaAdmin.this, "Error: " + ex.getMessage(), "Error",
 							JOptionPane.ERROR_MESSAGE);
 				}
@@ -1522,15 +1546,20 @@ public class VentanaAdmin extends JFrame {
 		lblSeleccionCursoVisado.setFont(new Font("Segoe UI", Font.BOLD, 20));
 		tabSuperior.add(lblSeleccionCursoVisado);
 
-		JComboBox comboBoxCursosVisado = new JComboBox();
+		JComboBox<String> comboBoxCursosVisado = new JComboBox();
 		comboBoxCursosVisado.setForeground(new Color(128, 0, 255));
 		comboBoxCursosVisado.setBackground(new Color(255, 255, 255));
-		comboBoxCursosVisado.setModel(new DefaultComboBoxModel(
-				new String[] { "Informatica 9º3", "Informatica 9º4", "Ingles 7º3", "Ingles 8º3" }));
+		List<Curso> todosLosCursos = CursoService.listarTodosLosCursos();
+		cursosNombre = new ArrayList<>();
+		for (Curso curso: todosLosCursos) {
+			this.cursosNombre.add(curso.getNombre_curso());
+		}
+		comboBoxCursosVisado.setModel(new DefaultComboBoxModel<>(this.cursosNombre.toArray(new String[0])));
 		comboBoxCursosVisado.setFont(new Font("Segoe UI", Font.PLAIN, 16));
 		tabSuperior.add(comboBoxCursosVisado);
 
 		JButton btnCargarVisado = new JButton("Cargar información");
+
 		btnCargarVisado.setForeground(new Color(0, 0, 0));
 		btnCargarVisado.setFont(new Font("Segoe UI Black", Font.BOLD, 14));
 		btnCargarVisado.setBackground(new Color(255, 255, 255));
@@ -1611,21 +1640,10 @@ public class VentanaAdmin extends JFrame {
 		JScrollPane scrollPaneDesarrolloVisado = new JScrollPane();
 		scrollPaneDesarrolloVisado.setBounds(10, 237, 146, 180);
 		tabVisadoAdm.add(scrollPaneDesarrolloVisado);
-
-		JList listDesarrolloVisado = new JList();
+		
+		DefaultListModel<String> modelDesarrollos = new DefaultListModel<>();
+		JList<String> listDesarrolloVisado = new JList<>(modelDesarrollos);
 		scrollPaneDesarrolloVisado.setViewportView(listDesarrolloVisado);
-		listDesarrolloVisado.setModel(new AbstractListModel() {
-			String[] values = new String[] { "1/08", "31/07", "22/07", "8/08", "Prueba2", "Prueba3", "Prueba",
-					"Prueba4", "Prueba5" };
-
-			public int getSize() {
-				return values.length;
-			}
-
-			public Object getElementAt(int index) {
-				return values[index];
-			}
-		});
 
 		listDesarrolloVisado.setValueIsAdjusting(true);
 		listDesarrolloVisado.setForeground(new Color(128, 0, 255));
@@ -1637,7 +1655,7 @@ public class VentanaAdmin extends JFrame {
 		JTextArea txtrDesarrolloVisado = new JTextArea();
 		txtrDesarrolloVisado.setLineWrap(true);
 		txtrDesarrolloVisado.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-		txtrDesarrolloVisado.setText("aaa");
+		txtrDesarrolloVisado.setText("");
 		txtrDesarrolloVisado.setBounds(162, 235, 266, 151);
 		tabVisadoAdm.add(txtrDesarrolloVisado);
 
@@ -1691,38 +1709,327 @@ public class VentanaAdmin extends JFrame {
 		rdbtnPromediosIVisado.setBounds(674, 537, 98, 23);
 		tabVisadoAdm.add(rdbtnPromediosIVisado);
 
-		JLabel lblEvSemestralVisado = new JLabel("1ºer Evaluación semestral:");
+		JLabel lblEvSemestralVisado = new JLabel("1ºer Evaluación semestral");
 		lblEvSemestralVisado.setFont(new Font("Segoe UI", Font.BOLD, 14));
 		lblEvSemestralVisado.setBounds(10, 472, 185, 20);
 		tabVisadoAdm.add(lblEvSemestralVisado);
 
-		JLabel lblEvSemestral2Visado = new JLabel("2ºda Evaluación semestral:");
+		JLabel lblEvSemestral2Visado = new JLabel("2ºda Evaluación semestral");
 		lblEvSemestral2Visado.setFont(new Font("Segoe UI", Font.BOLD, 14));
 		lblEvSemestral2Visado.setBounds(8, 513, 185, 20);
 		tabVisadoAdm.add(lblEvSemestral2Visado);
 
-		JLabel lblEvSemestralDinamicVisado = new JLabel("-");
-		lblEvSemestralDinamicVisado.setBounds(190, 477, 191, 14);
-		tabVisadoAdm.add(lblEvSemestralDinamicVisado);
-
-		JLabel lblEvSemestral2DinamicVisado = new JLabel("-");
-		lblEvSemestral2DinamicVisado.setBounds(188, 516, 156, 14);
-		tabVisadoAdm.add(lblEvSemestral2DinamicVisado);
-
 		JRadioButton rdbtnEvSemestralCVisado = new JRadioButton("Completo");
 		buttonGroup_2.add(rdbtnEvSemestralCVisado);
-		rdbtnEvSemestralCVisado.setBounds(54, 537, 85, 23);
+		rdbtnEvSemestralCVisado.setBounds(189, 499, 85, 23);
 		tabVisadoAdm.add(rdbtnEvSemestralCVisado);
 
 		JRadioButton rdbtnEvSemestralIVisado = new JRadioButton("Incompleto\r\n");
 		buttonGroup_2.add(rdbtnEvSemestralIVisado);
-		rdbtnEvSemestralIVisado.setBounds(149, 537, 98, 23);
+		rdbtnEvSemestralIVisado.setBounds(276, 499, 98, 23);
 		tabVisadoAdm.add(rdbtnEvSemestralIVisado);
 
 		JLabel lblPromediosVisado = new JLabel("Promedios:");
 		lblPromediosVisado.setFont(new Font("Segoe UI", Font.BOLD, 14));
 		lblPromediosVisado.setBounds(500, 537, 99, 19);
 		tabVisadoAdm.add(lblPromediosVisado);
+		
+		
+		
+		btnCargarVisado.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				
+				// CARGAR DOCENTE Y SU CEDULA/DOCUMENTO
+				String nombreCurso = comboBoxCursosVisado.getSelectedItem().toString();
+				System.out.println(nombreCurso);
+				Curso cursoSeleccionado = CursoService.buscarCursoPorNombre(nombreCurso);
+				Usuario docenteSeleccionado = UsuarioCursoDAO.obtenerDocentePorCurso(cursoSeleccionado.getId());
+				lblDocenteVisadoDinamic.setText(docenteSeleccionado.getNombre() + " " + docenteSeleccionado.getApellido());
+				lblCiVisadoDinamic.setText(docenteSeleccionado.getDocumento());
+				
+				// CARGAR PLANIFICACION
+				Planificacion planificacion = PlanificacionService.obtenerPlanificacion(cursoSeleccionado.getId(), docenteSeleccionado.getId());
+				lblPlanifAnualDinamic.setText(planificacion.getHipervinculo());
+				
+				// CARGAR ESTUDIANTES
+				cargarEstudiantes(cursoSeleccionado);
+				
+				// CARGAR DESARROLLOS DEL CURSO SELECCIONADO				
+				List<Desarrollo> desarrollos = DesarrolloService.obtenerDesarrollosPorCurso(cursoSeleccionado.getId());
+				modelDesarrollos.clear();
+				listDesarrolloVisado.clearSelection();
+				for (Desarrollo d : desarrollos) {
+				    String texto = d.getFecha().toString();
+				    System.out.println(texto);
+				    modelDesarrollos.addElement(texto);
+				}
+				
+				// Agregar MouseListener al JList para detectar clicks
+				listDesarrolloVisado.addMouseListener(new MouseAdapter() {
+				    @Override
+				    public void mouseClicked(MouseEvent e) {
+				        try {
+				            // Obtener el índice seleccionado
+				            int index = listDesarrolloVisado.getSelectedIndex();
+				            if (index != -1) {
+				                // Obtener la fecha seleccionada
+				                String fechaSeleccionada = listDesarrolloVisado.getSelectedValue();
+				                
+				                // Obtener el curso seleccionado
+				                String nombreCurso = comboBoxCursosVisado.getSelectedItem().toString();
+				                Curso cursoSeleccionado = CursoService.buscarCursoPorNombre(nombreCurso);
+				                
+				                // Buscar el desarrollo correspondiente a la fecha
+				                Desarrollo desarrolloSeleccionado = null;
+				                for (Desarrollo d : desarrollos) {
+				                    if (d.getFecha().toString().equals(fechaSeleccionada)) {
+				                        desarrolloSeleccionado = d;
+				                        break;
+				                    }
+				                }
+				                
+				                // Mostrar la descripción en el TextArea
+				                if (desarrolloSeleccionado != null) {
+				                    txtrDesarrolloVisado.setText(desarrolloSeleccionado.getContenido());
+				                }
+				            }
+				        } catch (Exception ex) {
+				            JOptionPane.showMessageDialog(VentanaAdmin.this, 
+				                "Error al cargar la descripción: " + ex.getMessage());
+				        }
+				    }
+				});
+			}
+		});
+
+		// ===== EVENTO DEL BOTÓN GUARDAR VISADO =====
+		btnGuardarVisado.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					// VALIDACIÓN 1: Verificar que hay un curso seleccionado
+					if (comboBoxCursosVisado.getSelectedItem() == null) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor seleccione un curso antes de guardar el visado.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// VALIDACIÓN 2: Verificar que hay información del docente cargada
+					// (El docente se carga automáticamente cuando se selecciona un curso)
+					if (lblDocenteVisadoDinamic.getText().equals("-")) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor cargue la información del curso primero para obtener los datos del docente.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// VALIDACIÓN 3: Verificar que todos los radio buttons estén seleccionados
+					// Planificación anual
+					if (!rdbtnPlanifAnualCVisado.isSelected() && !rdbtnPlanifAnualIVisado.isSelected()) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor seleccione si la Planificación anual está Completa o Incompleta.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// Desarrollo
+					if (!rdbtnDesarrolloCVisado.isSelected() && !rdbtnDesarrolloIVisado.isSelected()) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor seleccione si el Desarrollo está Completo o Incompleto.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// Evaluación semestral
+					if (!rdbtnEvSemestralCVisado.isSelected() && !rdbtnEvSemestralIVisado.isSelected()) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor seleccione si la Evaluación semestral está Completa o Incompleta.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// Promedios
+					if (!rdbtnPromediosCVisado.isSelected() && !rdbtnPromediosIVisado.isSelected()) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Por favor seleccione si los Promedios están Completos o Incompletos.", 
+							"Error de validación", JOptionPane.WARNING_MESSAGE);
+						return;
+					}
+					
+					// Si llegamos aquí, todas las validaciones pasaron
+					// Ahora obtenemos los datos necesarios para crear el visado
+					
+					// Obtener el ID del administrador actual (usuario logueado)
+					// Asumiendo que tienes una variable que guarda el usuario actual
+					
+					// Obtener la fecha y hora actual
+					java.sql.Timestamp fechaActual = new java.sql.Timestamp(System.currentTimeMillis());
+					
+					// Obtener los valores booleanos de los radio buttons
+					// true = Completo, false = Incompleto
+					boolean planificacionCompleta = rdbtnPlanifAnualCVisado.isSelected();
+					boolean desarrolloCompleto = rdbtnDesarrolloCVisado.isSelected();
+					boolean evaluacionCompleta = rdbtnEvSemestralCVisado.isSelected();
+					boolean promediosCompletos = rdbtnPromediosCVisado.isSelected();
+					
+					String nombreCurso = comboBoxCursosVisado.getSelectedItem().toString();
+					Curso cursoSeleccionado = CursoService.buscarCursoPorNombre(nombreCurso);
+					Usuario docenteSeleccionado = UsuarioCursoDAO.obtenerDocentePorCurso(cursoSeleccionado.getId());
+					int idAdministrador = docenteSeleccionado.getId();
+					int cursoId = cursoSeleccionado.getId();
+					
+					// Crear el objeto Visado con todos los datos
+					Visado nuevoVisado = new Visado(
+						idAdministrador,           // ID del administrador
+						fechaActual,               // Fecha y hora actual
+						planificacionCompleta,     // Estado de planificación
+						evaluacionCompleta,        // Estado de parciales/evaluaciones
+						desarrolloCompleto,        // Estado de desarrollo
+						promediosCompletos,        // Estado de promedios
+						cursoId					   // Curso ID
+					);
+					
+					// Intentar guardar el visado usando el servicio
+					boolean guardadoExitoso = VisadoService.crearVisado(nuevoVisado);
+					
+					if (guardadoExitoso) {
+						// Mostrar mensaje de éxito
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"¡Visado guardado exitosamente!\n\n" +
+							"Fecha: " + fechaActual.toString() + "\n" +
+							"Planificación: " + (planificacionCompleta ? "Completa" : "Incompleta") + "\n" +
+							"Desarrollo: " + (desarrolloCompleto ? "Completo" : "Incompleto") + "\n" +
+							"Evaluación: " + (evaluacionCompleta ? "Completa" : "Incompleta") + "\n" +
+							"Promedios: " + (promediosCompletos ? "Completos" : "Incompletos"), 
+							"Visado Guardado", JOptionPane.INFORMATION_MESSAGE);
+						
+						// Limpiar los radio buttons después del guardado exitoso
+						buttonGroup.clearSelection();
+						buttonGroup_1.clearSelection();
+						buttonGroup_2.clearSelection();
+						buttonGroup_3.clearSelection();
+						
+					} else {
+						// Mostrar mensaje de error
+						JOptionPane.showMessageDialog(VentanaAdmin.this, 
+							"Error al guardar el visado. Por favor intente nuevamente.", 
+							"Error", JOptionPane.ERROR_MESSAGE);
+					}
+					
+				} catch (Exception ex) {
+					// Capturar cualquier error inesperado
+					JOptionPane.showMessageDialog(VentanaAdmin.this, 
+						"Error inesperado al guardar el visado: " + ex.getMessage(), 
+						"Error", JOptionPane.ERROR_MESSAGE);
+					ex.printStackTrace(); // Para debugging
+				}
+			}
+		});
 
 	}
+	
+	class ResumenEstudianteCurso {
+        private String documento;
+        private List<Double> actividades = new ArrayList<>();
+        private Double primerParcial;
+        private Double segundoParcial;
+        private int faltas;
+
+        public ResumenEstudianteCurso(String documento, String nombre, String apellido) {
+            this.documento = documento;
+
+        }
+
+        // Getters y setters
+        public String getDocumento() { return documento; }
+        public List<Double> getActividades() { return actividades; }
+        public Double getPrimerParcial() { return primerParcial; }
+        public void setPrimerParcial(Double primerParcial) { this.primerParcial = primerParcial; }
+        public Double getSegundoParcial() { return segundoParcial; }
+        public void setSegundoParcial(Double segundoParcial) { this.segundoParcial = segundoParcial; }
+        public int getFaltas() { return faltas; }
+        public void setFaltas(int faltas) { this.faltas = faltas; }
+        
+        public String getActividadesStr() {
+            if (actividades.isEmpty()) return "-";
+            return actividades.stream()
+                .map(Object::toString)
+                .collect(Collectors.joining(", "));
+        }
+        
+        public Double getPromedio() {
+            double suma = 0;
+            int count = 0;
+            
+            if (primerParcial != null) {
+                suma += primerParcial;
+                count++;
+            }
+            if (segundoParcial != null) {
+                suma += segundoParcial;
+                count++;
+            }
+            for (Double act : actividades) {
+                suma += act;
+                count++;
+            }
+            
+            return count > 0 ? suma / count : 0.0;
+        }
+    }
+	
+	private void cargarEstudiantes(Curso curso) {
+        try {
+			// Obtener estudiantes activos del curso
+            List<Usuario> estudiantes = UsuarioCursoDAO.obtenerEstudiantesActivosPorCurso(curso.getId());
+            DefaultTableModel model = (DefaultTableModel) tableEstudiantesVisado.getModel();
+            model.setRowCount(0); // Limpiar tabla existente
+
+            for (Usuario estudiante : estudiantes) {
+                // Obtener calificaciones del estudiante en este curso
+                List<CalificacionDetalle> calificaciones = 
+                    calificacionDAO.obtenerCalificacionesPorEstudianteYCurso(
+                        estudiante.getUsuarioId(), curso.getId());
+
+                // Crear resumen del estudiante
+                ResumenEstudianteCurso resumen = new ResumenEstudianteCurso(
+                    estudiante.getDocumento(),
+                    estudiante.getNombre(),
+                    estudiante.getApellido()
+                );
+
+                // Procesar calificaciones
+                for (CalificacionDetalle calificacion : calificaciones) {
+                    String tipo = calificacion.getTipoEvaluacion();
+                    double nota = calificacion.getNota();
+
+                    if ("Actividad".equalsIgnoreCase(tipo)) {
+                        resumen.getActividades().add(nota);
+                    } else if ("Parcial1".equalsIgnoreCase(tipo)) {
+                        resumen.setPrimerParcial(nota);
+                    } else if ("Parcial2".equalsIgnoreCase(tipo)) {
+                        resumen.setSegundoParcial(nota);
+                    }
+                }
+
+                // Consultar faltas reales
+                int faltas = AsistenciaDAO.obtenerFaltasPorEstudianteYCurso(estudiante.getUsuarioId(), curso.getNombre_curso());
+                resumen.setFaltas(faltas);
+
+                // Añadir fila a la tabla
+                model.addRow(new Object[]{
+                    resumen.getDocumento(),
+                    resumen.getActividadesStr(),
+                    resumen.getPrimerParcial(),
+                    resumen.getSegundoParcial(),
+                    resumen.getPromedio(),
+                    resumen.getFaltas()
+                });
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar estudiantes: " + e.getMessage());
+        }
+    }
 }

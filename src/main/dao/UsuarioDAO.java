@@ -225,4 +225,34 @@ public class UsuarioDAO {
 
 		return lista;}
 
+	public static Usuario buscarUsuarioPorId(int usuarioId) {
+        String sql = "SELECT * FROM usuario WHERE usuario_id = ?";
+
+        try (Connection conn = Conexion.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, usuarioId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                Usuario usuario = new Usuario();
+                usuario.setUsuarioId(rs.getInt("usuario_id"));
+                usuario.setDocumento(rs.getString("documento"));
+                usuario.setNombre(rs.getString("nombre"));
+                usuario.setApellido(rs.getString("apellido"));
+                usuario.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
+                usuario.setEmail(rs.getString("email"));
+                usuario.setEstado(rs.getBoolean("estado"));
+                usuario.setRol_id(rs.getInt("rol_id"));
+                usuario.setContrasena(rs.getString("contrasena_hash"));
+                return usuario;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null; // No se encontró usuario con ese ID
+    }
+
 }

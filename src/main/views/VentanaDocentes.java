@@ -28,10 +28,12 @@ import main.model.Desarrollo;
 import main.model.Evaluacion;
 import main.model.Planificacion;
 import main.model.Usuario;
+import main.model.Visado;
 import main.services.CalificacionService;
 import main.services.DesarrolloService;
 import main.services.EvaluacionService;
 import main.services.PlanificacionService;
+import main.services.VisadoService;
 import main.views.personalized.AsistenciaEditor;
 import main.views.personalized.AsistenciaRenderer;
 
@@ -49,6 +51,7 @@ import java.awt.event.FocusEvent;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -104,6 +107,13 @@ public class VentanaDocentes extends JFrame {
 
     private JTextField txtTituloEvaluacion;	// Clase interna para el resumen del estudiante en el curso
     private final Action action = new SwingAction();
+    
+    // Variables de instancia para los radio buttons de visado
+    private JRadioButton rdbtnPlanifCEstadovis, rdbtnPlanifIEstadovis, rdbtnPlanifSEstadovis;
+    private JRadioButton rdbtnPromedioCEstadovis, rdbtnPromedioIEstadovis, rdbtnPromedioSEstadovis;
+    private JRadioButton rdbtnEvalCEstadovis, rdbtnEvalIEstadovis, rdbtnEvalSEstadovis;
+    private JRadioButton rdbtnDesarrolloCEstadovis, rdbtnDesarrolloIEstadovis, rdbtnDesarrolloSEstadovis;
+    private JLabel lblInfoVisado;
     public class ResumenEstudianteCurso {
         private String documento;
         private String nombre;
@@ -832,17 +842,19 @@ public class VentanaDocentes extends JFrame {
 		panelVisado.add(lblEstadoVisado);
 		lblEstadoVisado.setFont(new Font("Segoe UI", Font.BOLD, 24));
 		
-		JRadioButton rdbtnPlanifCEstadovis = new JRadioButton("Visado Completo");
+		rdbtnPlanifCEstadovis = new JRadioButton("Visado Completo");
 		rdbtnPlanifCEstadovis.setBounds(464, 126, 121, 23);
 		panelVisado.add(rdbtnPlanifCEstadovis);
 		rdbtnPlanifCEstadovis.setFont(new Font("Arial", Font.BOLD, 12));
+		rdbtnPlanifCEstadovis.setEnabled(false);
 		buttonGroup.add(rdbtnPlanifCEstadovis);
 		
-		JRadioButton rdbtnPlanifIEstadovis = new JRadioButton("Visado incompleto");
+		rdbtnPlanifIEstadovis = new JRadioButton("Visado incompleto");
 		rdbtnPlanifIEstadovis.setBounds(586, 126, 131, 23);
 		panelVisado.add(rdbtnPlanifIEstadovis);
 		rdbtnPlanifIEstadovis.setSelected(true);
 		rdbtnPlanifIEstadovis.setFont(new Font("Arial", Font.BOLD, 12));
+		rdbtnPlanifIEstadovis.setEnabled(false);
 		buttonGroup.add(rdbtnPlanifIEstadovis);
 		
 		JLabel lblDef2 = new JLabel("Promedios de estudiantes:");
@@ -850,29 +862,33 @@ public class VentanaDocentes extends JFrame {
 		lblDef2.setBounds(246, 200, 201, 22);
 		panelVisado.add(lblDef2);
 		
-		JRadioButton rdbtnPromedioCEstadovis = new JRadioButton("Visado Completo");
+		rdbtnPromedioCEstadovis = new JRadioButton("Visado Completo");
 		buttonGroup_1.add(rdbtnPromedioCEstadovis);
 		rdbtnPromedioCEstadovis.setFont(new Font("Arial", Font.BOLD, 12));
 		rdbtnPromedioCEstadovis.setBounds(464, 203, 121, 23);
+		rdbtnPromedioCEstadovis.setEnabled(false);
 		panelVisado.add(rdbtnPromedioCEstadovis);
 		
-		JRadioButton rdbtnPromedioIEstadovis = new JRadioButton("Visado incompleto");
+		rdbtnPromedioIEstadovis = new JRadioButton("Visado incompleto");
 		buttonGroup_1.add(rdbtnPromedioIEstadovis);
 		rdbtnPromedioIEstadovis.setSelected(true);
 		rdbtnPromedioIEstadovis.setFont(new Font("Arial", Font.BOLD, 12));
 		rdbtnPromedioIEstadovis.setBounds(586, 203, 131, 23);
+		rdbtnPromedioIEstadovis.setEnabled(false);
 		panelVisado.add(rdbtnPromedioIEstadovis);
 		
-		JRadioButton rdbtnPlanifSEstadovis = new JRadioButton("Sin revisión");
+		rdbtnPlanifSEstadovis = new JRadioButton("Sin revisión");
 		buttonGroup.add(rdbtnPlanifSEstadovis);
 		rdbtnPlanifSEstadovis.setBounds(719, 126, 109, 23);
+		rdbtnPlanifSEstadovis.setEnabled(false);
 		panelVisado.add(rdbtnPlanifSEstadovis);
 		
-		JRadioButton rdbtnPromedioSEstadovis = new JRadioButton("Sin revisión");
+		rdbtnPromedioSEstadovis = new JRadioButton("Sin revisión");
 		buttonGroup_1.add(rdbtnPromedioSEstadovis);
 		rdbtnPromedioSEstadovis.setSelected(true);
 		rdbtnPromedioSEstadovis.setFont(new Font("Arial", Font.BOLD, 12));
 		rdbtnPromedioSEstadovis.setBounds(719, 203, 131, 23);
+		rdbtnPromedioSEstadovis.setEnabled(false);
 		panelVisado.add(rdbtnPromedioSEstadovis);
 		
 		JLabel lblDef = new JLabel("Registro de evaluación semestral:");
@@ -880,24 +896,27 @@ public class VentanaDocentes extends JFrame {
 		lblDef.setBounds(192, 294, 255, 22);
 		panelVisado.add(lblDef);
 		
-		JRadioButton rdbtnEvalCEstadovis = new JRadioButton("Visado Completo");
+		rdbtnEvalCEstadovis = new JRadioButton("Visado Completo");
 		buttonGroup_2.add(rdbtnEvalCEstadovis);
 		rdbtnEvalCEstadovis.setFont(new Font("Arial", Font.BOLD, 12));
 		rdbtnEvalCEstadovis.setBounds(464, 297, 121, 23);
+		rdbtnEvalCEstadovis.setEnabled(false);
 		panelVisado.add(rdbtnEvalCEstadovis);
 		
-		JRadioButton rdbtnEvalIEstadovis = new JRadioButton("Visado incompleto");
+		rdbtnEvalIEstadovis = new JRadioButton("Visado incompleto");
 		buttonGroup_2.add(rdbtnEvalIEstadovis);
 		rdbtnEvalIEstadovis.setSelected(true);
 		rdbtnEvalIEstadovis.setFont(new Font("Arial", Font.BOLD, 12));
 		rdbtnEvalIEstadovis.setBounds(586, 297, 131, 23);
+		rdbtnEvalIEstadovis.setEnabled(false);
 		panelVisado.add(rdbtnEvalIEstadovis);
 		
-		JRadioButton rdbtnEvalSEstadovis = new JRadioButton("Sin revisión");
+		rdbtnEvalSEstadovis = new JRadioButton("Sin revisión");
 		buttonGroup_2.add(rdbtnEvalSEstadovis);
 		rdbtnEvalSEstadovis.setSelected(true);
 		rdbtnEvalSEstadovis.setFont(new Font("Arial", Font.BOLD, 12));
 		rdbtnEvalSEstadovis.setBounds(719, 297, 131, 23);
+		rdbtnEvalSEstadovis.setEnabled(false);
 		panelVisado.add(rdbtnEvalSEstadovis);
 		
 		JLabel lblDesarrolloEstadoVis = new JLabel("Desarrollo del curso:");
@@ -905,25 +924,35 @@ public class VentanaDocentes extends JFrame {
 		lblDesarrolloEstadoVis.setBounds(291, 394, 156, 23);
 		panelVisado.add(lblDesarrolloEstadoVis);
 		
-		JRadioButton rdbtnDesarrolloCEstadovis = new JRadioButton("Visado Completo");
+		rdbtnDesarrolloCEstadovis = new JRadioButton("Visado Completo");
 		buttonGroup_3.add(rdbtnDesarrolloCEstadovis);
 		rdbtnDesarrolloCEstadovis.setFont(new Font("Arial", Font.BOLD, 12));
 		rdbtnDesarrolloCEstadovis.setBounds(464, 397, 121, 23);
+		rdbtnDesarrolloCEstadovis.setEnabled(false);
 		panelVisado.add(rdbtnDesarrolloCEstadovis);
 		
-		JRadioButton rdbtnDesarrolloIEstadovis = new JRadioButton("Visado incompleto");
+		rdbtnDesarrolloIEstadovis = new JRadioButton("Visado incompleto");
 		buttonGroup_3.add(rdbtnDesarrolloIEstadovis);
 		rdbtnDesarrolloIEstadovis.setSelected(true);
 		rdbtnDesarrolloIEstadovis.setFont(new Font("Arial", Font.BOLD, 12));
 		rdbtnDesarrolloIEstadovis.setBounds(586, 397, 131, 23);
+		rdbtnDesarrolloIEstadovis.setEnabled(false);
 		panelVisado.add(rdbtnDesarrolloIEstadovis);
 		
-		JRadioButton rdbtnDesarrolloSEstadovis = new JRadioButton("Sin revisión");
+		rdbtnDesarrolloSEstadovis = new JRadioButton("Sin revisión");
 		buttonGroup_3.add(rdbtnDesarrolloSEstadovis);
 		rdbtnDesarrolloSEstadovis.setSelected(true);
 		rdbtnDesarrolloSEstadovis.setFont(new Font("Arial", Font.BOLD, 12));
 		rdbtnDesarrolloSEstadovis.setBounds(719, 397, 131, 23);
+		rdbtnDesarrolloSEstadovis.setEnabled(false);
 		panelVisado.add(rdbtnDesarrolloSEstadovis);
+		
+		// Label para mostrar información del visado
+		lblInfoVisado = new JLabel("");
+		lblInfoVisado.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+		lblInfoVisado.setForeground(new Color(60, 60, 60));
+		lblInfoVisado.setBounds(200, 470, 600, 20);
+		panelVisado.add(lblInfoVisado);
 		
 		JPanel tabDesarrollo = new JPanel();
 		tabbedPane.addTab("Desarrollo", null, tabDesarrollo, null);
@@ -1084,7 +1113,92 @@ public class VentanaDocentes extends JFrame {
 		btnVerHistorial.setBackground(new Color(128, 0, 255));
 		btnVerHistorial.setBounds(773, 449, 141, 37);
 		panelDesarrollo.add(btnVerHistorial);
+		
+		// Cargar valores del visado al iniciar la ventana
+		cargarVisado();
 	}
+	
+	private void cargarVisado() {
+        try {
+            // Obtener el visado para este curso
+            Visado visado = VisadoService.obtenerVisadoPorCurso(Curso.getId());
+            
+            if (visado != null) {
+                // Configurar radio buttons de planificación
+                rdbtnPlanifCEstadovis.setSelected(false);
+                rdbtnPlanifIEstadovis.setSelected(false);
+                rdbtnPlanifSEstadovis.setSelected(false);
+                if (visado.isPlanificacion()) {
+                    rdbtnPlanifCEstadovis.setSelected(true);
+                } else {
+                    rdbtnPlanifIEstadovis.setSelected(true);
+                }
+                
+                // Configurar radio buttons de promedios
+                rdbtnPromedioCEstadovis.setSelected(false);
+                rdbtnPromedioIEstadovis.setSelected(false);
+                rdbtnPromedioSEstadovis.setSelected(false);
+                if (visado.isPromedios()) {
+                    rdbtnPromedioCEstadovis.setSelected(true);
+                } else {
+                    rdbtnPromedioIEstadovis.setSelected(true);
+                }
+                
+                // Configurar radio buttons de evaluación
+                rdbtnEvalCEstadovis.setSelected(false);
+                rdbtnEvalIEstadovis.setSelected(false);
+                rdbtnEvalSEstadovis.setSelected(false);
+                if (visado.isParciales()) {
+                    rdbtnEvalCEstadovis.setSelected(true);
+                } else {
+                    rdbtnEvalIEstadovis.setSelected(true);
+                }
+                
+                // Configurar radio buttons de desarrollo
+                rdbtnDesarrolloCEstadovis.setSelected(false);
+                rdbtnDesarrolloIEstadovis.setSelected(false);
+                rdbtnDesarrolloSEstadovis.setSelected(false);
+                if (visado.isDesarrollo()) {
+                    rdbtnDesarrolloCEstadovis.setSelected(true);
+                } else {
+                    rdbtnDesarrolloIEstadovis.setSelected(true);
+                }
+                
+                // Obtener información del administrador
+                Usuario admin = VisadoService.obtenerUsuarioPorId(visado.getUsuarioIdAdministrador());
+                if (admin != null) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    String fechaFormateada = sdf.format(visado.getFechaVisado());
+                    String info = "Visado por: " + admin.getNombre() + " " + admin.getApellido() + 
+                                 " - Fecha: " + fechaFormateada;
+                    lblInfoVisado.setText(info);
+                }
+            } else {
+                // Si no hay visado, dejar los valores por defecto en "Sin revisión"
+                // Deseleccionar todos primero para evitar conflictos con ButtonGroup
+                rdbtnPlanifCEstadovis.setSelected(false);
+                rdbtnPlanifIEstadovis.setSelected(false);
+                rdbtnPlanifSEstadovis.setSelected(true);
+                
+                rdbtnPromedioCEstadovis.setSelected(false);
+                rdbtnPromedioIEstadovis.setSelected(false);
+                rdbtnPromedioSEstadovis.setSelected(true);
+                
+                rdbtnEvalCEstadovis.setSelected(false);
+                rdbtnEvalIEstadovis.setSelected(false);
+                rdbtnEvalSEstadovis.setSelected(true);
+                
+                rdbtnDesarrolloCEstadovis.setSelected(false);
+                rdbtnDesarrolloIEstadovis.setSelected(false);
+                rdbtnDesarrolloSEstadovis.setSelected(true);
+                
+                lblInfoVisado.setText("No hay visado registrado para este curso");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error al cargar el visado: " + e.getMessage());
+        }
+    }
 	
 	private void cargarEstudiantes() {
         try {
@@ -1150,8 +1264,7 @@ public class VentanaDocentes extends JFrame {
 	        return;
 	    }
 
-	    // Convertimos java.util.Date -> java.sql.Date
-	    java.sql.Date fechaClase = new java.sql.Date(fechaSeleccionada.getTime());
+	    Date fechaClase = new Date(fechaSeleccionada.getTime());
 
 	    try {
 	        DefaultTableModel model = (DefaultTableModel) tableLista.getModel();
