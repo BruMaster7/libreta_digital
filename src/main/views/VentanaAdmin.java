@@ -660,6 +660,7 @@ public class VentanaAdmin extends JFrame {
 					textCorreoEditarusuario.setText(usuario.getEmail());
 					textPasswardEditarUsuario.setText(usuario.getContrasena());
 					comboEstadoEditarusuario.setSelectedItem(String.valueOf(usuario.getEstado()));
+					dChooserFechaNacEdit.setDate(new Date(usuario.getFechaNacimiento().getTime()));
 
 				} else {
 					JOptionPane.showMessageDialog(this, "Usuario no encontrado.");
@@ -668,6 +669,8 @@ public class VentanaAdmin extends JFrame {
 					textApellidoEditarusuario.setText("");
 					textCorreoEditarusuario.setText("");
 					textPasswardEditarUsuario.setText("");
+					comboEstadoEditarusuario.setSelectedIndex(0);
+					dChooserFechaNacEdit.setDate(null);
 				}
 			} catch (Exception ex) {
 				JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -836,6 +839,11 @@ public class VentanaAdmin extends JFrame {
 								"Error", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
+					if (docente.getRolId() != 2) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, "El usuario no es un docente.", "Error",
+								JOptionPane.ERROR_MESSAGE);
+						return;
+					}
 
 					boolean exito = CursoService.vincularUsuarioaCurso(docente.getId(), cursoSeleccionado);
 
@@ -870,6 +878,40 @@ public class VentanaAdmin extends JFrame {
 		btnDesvincularDocente.setBackground(new Color(128, 0, 0));
 		btnDesvincularDocente.setBounds(196, 522, 140, 33);
 		tabGestionCursos.add(btnDesvincularDocente);
+		btnDesvincularDocente.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String cedulaDocente = txtCiDocenteVinculado.getText().trim().toString();
+					String cursoSeleccionado = cmbSubCurso.getSelectedItem().toString();
+
+					Usuario docente = UsuarioService.buscarUsuarioPorCedula(cedulaDocente);
+					if (docente == null) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, "No se encontró un docente con esa cédula.",
+								"Error", JOptionPane.ERROR_MESSAGE);
+						return;
+					}
+
+					boolean exito = CursoService.desvincularUsuarioDeCurso(docente.getId(), cursoSeleccionado);
+
+					if (exito) {
+						JOptionPane.showMessageDialog(VentanaAdmin.this, "Docente desvinculado del curso correctamente.");
+						txtCiDocenteVinculado.setText("");
+						txtVacante.setText("Vacante");
+					} else {
+						JOptionPane.showMessageDialog(VentanaAdmin.this,
+								"No se pudo desvincular al docente. Verifique la cédula y el curso.", "Error",
+								JOptionPane.ERROR_MESSAGE);
+					}
+
+				} catch (NumberFormatException nfe) {
+					JOptionPane.showMessageDialog(VentanaAdmin.this, "El curso seleccionado no es válido.", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(VentanaAdmin.this, "Error: " + ex.getMessage(), "Error",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
 
 		JLabel lblEstudiantesEnEl = new JLabel("Estudiantes en el curso");
 		lblEstudiantesEnEl.setForeground(new Color(128, 0, 255));
@@ -908,6 +950,11 @@ public class VentanaAdmin extends JFrame {
 					return;
 				}
 
+				if (estudiante.getRolId() != 3) {
+					JOptionPane.showMessageDialog(this, "El usuario no es un estudiante.", "Error",
+							JOptionPane.ERROR_MESSAGE);
+					return;
+				}
 				// Vincular estudiante al curso
 				boolean exito = CursoService.vincularUsuarioaCurso(estudiante.getId(), cursoSeleccionado);
 
@@ -1313,12 +1360,16 @@ public class VentanaAdmin extends JFrame {
 					cursoExistente.setNombre_curso(nombreCurso);
 
 					boolean exito = CursoService.actualizarCurso(cursoExistente);
-
 					if (exito) {
 						JOptionPane.showMessageDialog(VentanaAdmin.this, "Curso actualizado exitosamente.");
-						  List<Rama> ramasEditarCurso = CursoService.listarCursosPorRama(ramaid);
-			                DefaultComboBoxModel<String> modelCursos = new DefaultComboBoxModel<>();
-			                if (!ramasEditarCurso.isEmpty()) {
+						txtEditarNombreCurso.setText("");
+						cmbRamaEditarCurso.setSelectedIndex(0);
+						cmbCursoEditar.setModel(new DefaultComboBoxModel(new String[] { "Seleccione una rama" }));
+						
+						
+						List<Rama> ramasEditarCurso = CursoService.listarCursosPorRama(ramaid);
+			            DefaultComboBoxModel<String> modelCursos = new DefaultComboBoxModel<>();
+			            if (!ramasEditarCurso.isEmpty()) {
 			                    Rama r = ramasEditarCurso.get(0);
 			                    for (Curso c : r.getCursos()) {
 			                        modelCursos.addElement(c.getNombre_curso());

@@ -65,8 +65,8 @@ public class UsuarioService {
 		        if (fechaNac.isAfter(LocalDate.now())) {
 		            throw new Exception("La fecha de nacimiento no puede ser futura.");
 		        }
-		        if (fechaNac.isAfter(LocalDate.now().minusYears(11))) {
-		            throw new Exception("El usuario debe tener al menos 11 años.");
+		        if (fechaNac.isAfter(LocalDate.now().minusYears(17))) {
+		            throw new Exception("El usuario debe tener al menos 17 años.");
 		        }
 		        if (fechaNac.isBefore(LocalDate.now().minusYears(100))) {
 					throw new Exception("La fecha de nacimiento no puede ser mayor a 100 años.");
