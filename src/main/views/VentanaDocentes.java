@@ -585,6 +585,24 @@ public class VentanaDocentes extends JFrame {
 		btnGuardarEvaluacionNota.setFont(new Font("Segoe UI", Font.BOLD, 13));
 		btnGuardarEvaluacionNota.setBounds(600, 462, 120, 39);
 		panelEvaluar.add(btnGuardarEvaluacionNota);
+		
+		JButton btnCargarEvaluaciones = new JButton("Actualizar");
+		btnCargarEvaluaciones.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Actualizar la lista de evaluaciones
+				List<Evaluacion> evaluacionesActualizadas = EvaluacionService.listarEvaluacionesPorCurso(cursoId);
+				modelo.clear();
+				for (Evaluacion ev : evaluacionesActualizadas) {
+				    modelo.addElement(ev.getNombre_evaluacion());
+				}
+				JOptionPane.showMessageDialog(null, "Lista de evaluaciones actualizada.");
+			}
+		});
+		btnCargarEvaluaciones.setForeground(Color.WHITE);
+		btnCargarEvaluaciones.setFont(new Font("Segoe UI", Font.BOLD, 13));
+		btnCargarEvaluaciones.setBackground(new Color(128, 0, 255));
+		btnCargarEvaluaciones.setBounds(269, 64, 111, 25);
+		panelEvaluar.add(btnCargarEvaluaciones);
 
 		btnGuardarEvaluacionNota.addActionListener(new ActionListener() {
 		    public void actionPerformed(ActionEvent e) {

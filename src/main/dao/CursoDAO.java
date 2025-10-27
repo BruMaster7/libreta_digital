@@ -16,7 +16,7 @@ public class CursoDAO {
     // --- LISTAR TODOS LOS CURSOS ---
     public static List<Curso> listarCursos() {
         List<Curso> lista = new ArrayList<>();
-        String sql = "SELECT curso_id, nombre_curso, estado, rama_id FROM curso";
+        String sql = "SELECT curso_id, nombre_curso, estado, rama_id FROM curso WHERE estado = true";
 
         try (Connection conn = Conexion.conectar();
              Statement stmt = conn.createStatement();

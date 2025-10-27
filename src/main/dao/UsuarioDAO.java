@@ -18,7 +18,7 @@ public class UsuarioDAO {
 	    Usuario usuario = null;
 
 	    String sql = "SELECT usuario_id, documento, nombre, apellido, fecha_nacimiento, email, estado, rol_id FROM usuario " +
-	                 "WHERE email = ? AND contrasena_hash = ?";
+	                 "WHERE email = ? AND contrasena_hash = ? and estado = true";
 
 	    try (Connection conn = Conexion.conectar();
 	         PreparedStatement stmt = conn.prepareStatement(sql)) {

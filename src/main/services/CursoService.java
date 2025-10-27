@@ -97,20 +97,20 @@ public class CursoService {
 		if (nuevoCurso.getNombre_curso() == null || nuevoCurso.getNombre_curso().isEmpty()) {
 			System.err.println("❌ El nombre del curso no puede estar vacío.");
 			return false;
-		}
+		}else {
 
 		 // Verificar si el curso ya existe
 		Curso cursoExistente = CursoDAO.buscarPorNombre(nuevoCurso.getNombre_curso());
 		if (cursoExistente != null) {
 			System.err.println("❌ Ya existe un curso con el nombre: " + nuevoCurso.getNombre_curso());
 			return false;
-		}
+		}else {
 		try {
 			return CursoDAO.agregarCurso(nuevoCurso);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
-		}
+		}}}
 	}
 
 	public static Curso buscarCursoPorNombre(String nombreCurso) {
@@ -118,7 +118,11 @@ public class CursoService {
 	}
 
 	public static boolean actualizarCurso(Curso cursoExistente) {
-		return CursoDAO.modificarCurso(cursoExistente);
+		if (cursoExistente.getNombre_curso() == null || cursoExistente.getNombre_curso().isEmpty()) {
+			System.err.println("❌ El nombre del curso no puede estar vacío.");
+			return false;
+		} else {
+		return CursoDAO.modificarCurso(cursoExistente);}
 	}
 
 	public static List<Curso> listarTodosLosCursos() {
