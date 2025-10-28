@@ -1928,7 +1928,7 @@ public class VentanaAdmin extends JFrame {
 					String nombreCurso = comboBoxCursosVisado.getSelectedItem().toString();
 					Curso cursoSeleccionado = CursoService.buscarCursoPorNombre(nombreCurso);
 					Usuario docenteSeleccionado = UsuarioCursoDAO.obtenerDocentePorCurso(cursoSeleccionado.getId());
-					int idAdministrador = docenteSeleccionado.getId();
+					int idAdministrador = Administrador.getId();
 					int cursoId = cursoSeleccionado.getId();
 					
 					// Crear el objeto Visado con todos los datos

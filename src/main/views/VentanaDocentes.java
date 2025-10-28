@@ -267,13 +267,6 @@ public class VentanaDocentes extends JFrame {
 		panelEstudiantes.add(panelBtnEstudiantes);
 		panelBtnEstudiantes.setLayout(null);
 		
-		JButton btnCerrarPromedios_1 = new JButton("Cerrar Promedios");
-		btnCerrarPromedios_1.setBounds(390, 3, 165, 25);
-		btnCerrarPromedios_1.setForeground(Color.WHITE);
-		btnCerrarPromedios_1.setFont(new Font("Arial", Font.BOLD, 14));
-		btnCerrarPromedios_1.setBackground(new Color(128, 0, 255));
-		panelBtnEstudiantes.add(btnCerrarPromedios_1);
-		
 		JButton btnActualizar = new JButton("ACTUALIZAR");
 		btnActualizar.addMouseListener(new MouseAdapter() {
 			@Override
@@ -284,7 +277,7 @@ public class VentanaDocentes extends JFrame {
 		btnActualizar.setForeground(Color.WHITE);
 		btnActualizar.setFont(new Font("Arial", Font.BOLD, 14));
 		btnActualizar.setBackground(new Color(128, 0, 255));
-		btnActualizar.setBounds(696, 5, 165, 25);
+		btnActualizar.setBounds(388, 11, 165, 25);
 		panelBtnEstudiantes.add(btnActualizar);
 		
 		JPanel tabEvaluacion = new JPanel();
@@ -677,7 +670,7 @@ public class VentanaDocentes extends JFrame {
 		
 		textPlanifAnual = new JTextField();
 		planificacion = PlanificacionService.obtenerPlanificacion(Curso.getId(), Docente.getId());
-		textPlanifAnual.setText(planificacion.getHipervinculo());
+		textPlanifAnual.setText(planificacion != null ? planificacion.getHipervinculo() : "");
 		textPlanifAnual.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 		textPlanifAnual.setBounds(229, 190, 477, 29);
 		panelPlanificaciones.add(textPlanifAnual);
